@@ -14,6 +14,8 @@ import {
   sampleAt,
   timestampAt
 } from '@shared/exporters/serialize'
+import { encodeDsbHeader } from '@shared/formats/dsb'
+import { createCrc32 } from '@shared/crypto/crc32'
 import { EXPORT_EXTENSIONS, type ExportRequest, type ExportResult } from '@shared/types/export'
 import type { TaskContext } from '@shared/types/task'
 import { datasetRegistry } from './datasetRegistry'
@@ -62,7 +64,9 @@ export async function exportDatasetWork(
   let bytesWritten = 0
   try {
     await mkdir(exportDir, { recursive: true })
-    if (plan.format === 'json') {
+    if (plan.format === 'dsb') {
+      bytesWritten = await writeDsbExport(dataset, plan, tmpPath, ctx)
+    } else if (plan.format === 'json') {
       bytesWritten = await writeJsonExport(dataset, plan, tmpPath, ctx)
     } else {
       bytesWritten = await writeDelimitedExport(dataset, plan, tmpPath, ctx)
@@ -178,22 +182,66 @@ async function writeJsonExport(
   }
 }
 
+async function writeDsbExport(
+  dataset: Parameters<typeof sampleAt>[0],
+  plan: ReturnType<typeof resolveExportPlan>,
+  tmpPath: string,
+  ctx: TaskContext
+): Promise<number> {
+  const writer = createChunkWriter(tmpPath)
+  const hasher = createCrc32()
+  try {
+    const header = encodeDsbHeader(plan)
+    hasher.update(header)
+    await writer.write(header)
+
+    const totalChannels = plan.channels.length
+    const sampleCount = plan.range.sampleCount
+    for (let channelIndex = 0; channelIndex < totalChannels; channelIndex += 1) {
+      await ctx.checkpoint()
+      const channel = plan.channels[channelIndex]
+      const chunk = new Uint8Array(sampleCount * 8)
+      const view = new DataView(chunk.buffer)
+      for (let sample = 0; sample < sampleCount; sample += 1) {
+        const value = sampleAt(dataset, channel, plan.range.startIndex + sample)
+        formatExportNumber(value)
+        view.setFloat64(sample * 8, value, true)
+      }
+      hasher.update(chunk)
+      await writer.write(chunk)
+      ctx.report(
+        0.08 + ((channelIndex + 1) / totalChannels) * 0.84,
+        `写入通道 ${channelIndex + 1}/${totalChannels}`
+      )
+    }
+
+    const crcBytes = new Uint8Array(4)
+    new DataView(crcBytes.buffer).setUint32(0, hasher.digest(), true)
+    await writer.write(crcBytes)
+    return await writer.close()
+  } catch (error) {
+    writer.destroy()
+    throw error
+  }
+}
+
 function createChunkWriter(filePath: string): {
-  write: (chunk: string) => Promise<void>
+  write: (chunk: string | Uint8Array) => Promise<void>
   close: () => Promise<number>
   destroy: () => void
 } {
-  const stream = createWriteStream(filePath, { encoding: 'utf8' })
+  const stream = createWriteStream(filePath)
   let bytes = 0
   let failed: Error | null = null
   stream.on('error', (error) => {
     failed = error
   })
 
-  async function write(chunk: string): Promise<void> {
+  async function write(chunk: string | Uint8Array): Promise<void> {
     if (failed) mapFsWriteError(failed, filePath)
-    bytes += Buffer.byteLength(chunk)
-    const ok = stream.write(chunk)
+    const data = typeof chunk === 'string' ? Buffer.from(chunk, 'utf8') : chunk
+    bytes += data.byteLength
+    const ok = stream.write(data)
     if (ok) return
     await new Promise<void>((resolve, reject) => {
       const onDrain = (): void => {

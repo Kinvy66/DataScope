@@ -91,7 +91,9 @@ export function formatDelimitedRow(
 }
 
 export function delimiterFor(format: ExportFormat): string {
-  return format === 'txt' ? '\t' : ','
+  if (format === 'txt') return '\t'
+  if (format === 'csv') return ','
+  throw new DataScopeError('VALIDATION_ERROR', `分隔文本导出不支持格式: ${format}`)
 }
 
 export function serializeExport(
@@ -99,6 +101,9 @@ export function serializeExport(
   request: Pick<ExportRequest, 'format' | 'channelIds' | 'startIndex' | 'endIndex'>
 ): string {
   const plan = resolveExportPlan(dataset, request)
+  if (plan.format === 'dsb') {
+    throw new DataScopeError('VALIDATION_ERROR', '二进制导出请使用 encodeDsb')
+  }
   if (plan.format === 'json') {
     return serializeJsonExport(dataset, plan)
   }

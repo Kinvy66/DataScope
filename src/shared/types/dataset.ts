@@ -1,4 +1,4 @@
-export type SourceFormat = 'csv' | 'txt' | 'json'
+export type SourceFormat = 'csv' | 'txt' | 'json' | 'dsb'
 
 export interface Channel {
   id: string

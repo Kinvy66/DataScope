@@ -1,11 +1,10 @@
+import { crc32 } from '../crypto/crc32'
 import { DataScopeError } from '../errors'
 import type { LivePacketFields } from '../types/live'
 
 export const PACKET_MAGIC = 0x44534350
 export const PACKET_VERSION = 1
 const HEADER_BYTES = 24
-
-const CRC_TABLE = createCrcTable()
 
 export function encodePacket(fields: LivePacketFields): Uint8Array {
   if (fields.samples.length !== fields.channelCount) {
@@ -96,24 +95,4 @@ export function decodePacket(bytes: Uint8Array): LivePacketFields {
     sampleCount,
     samples
   }
-}
-
-export function crc32(bytes: Uint8Array): number {
-  let crc = 0xffffffff
-  for (let i = 0; i < bytes.length; i += 1) {
-    crc = CRC_TABLE[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8)
-  }
-  return (crc ^ 0xffffffff) >>> 0
-}
-
-function createCrcTable(): Uint32Array {
-  const table = new Uint32Array(256)
-  for (let i = 0; i < 256; i += 1) {
-    let value = i
-    for (let bit = 0; bit < 8; bit += 1) {
-      value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1
-    }
-    table[i] = value >>> 0
-  }
-  return table
 }

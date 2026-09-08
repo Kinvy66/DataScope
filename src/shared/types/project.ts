@@ -1,6 +1,6 @@
 import type { MarkerType } from './dataset'
 
-export type DataFileFormat = 'csv' | 'txt' | 'json'
+export type DataFileFormat = 'csv' | 'txt' | 'json' | 'dsb'
 
 export interface ProjectSettings {
   defaultChannelVisible: boolean

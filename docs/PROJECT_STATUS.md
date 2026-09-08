@@ -8,8 +8,8 @@
 | 分支 | `master` |
 | 进度基准 | 以本文件所在 commit 为准 |
 | 产品阶段 | V1.0 Clean（禁止故意注入缺陷） |
-| 已完成 | Phase 1–12 + 5B：框架、工程、导入、波形、时域分析、数字滤波、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视、任务系统、数据导出、应用设置与界面中英切换、Playwright Electron 冒烟与 `test-data/` |
-| 建议下一阶段 | 打 `v1.0-clean` 标签，或补 DataScope 私有二进制导出；故障注入只在 `testing-lab` |
+| 已完成 | Phase 1–12 + 5B，含 DataScope Binary（`.dsb`）导出/再导入 |
+| 建议下一阶段 | 打 `v1.0-clean` 标签；故障注入只在 `testing-lab` |
 
 使用手册：[`docs/wiki/README.md`](./wiki/README.md)  
 开发任务书：[`docs/dev_plan/README.md`](./dev_plan/README.md)
@@ -20,7 +20,7 @@
 | --- | --- | --- | --- |
 | 1 | 基础框架 | 已完成 | Electron + Vue 3 壳、布局、路由、主题、日志、应用图标、操作按钮图标 |
 | 2 | 工程管理 | 已完成 | 新建 / 打开 / 保存 / 另存 / 关闭、未保存拦截、最近工程 |
-| 3 | 数据导入 | 已完成 | CSV / TXT / JSON 解析（含日期时间戳）、工程 `data/` 落地、数据集注册 |
+| 3 | 数据导入 | 已完成 | CSV / TXT / JSON / DSB 解析（含日期时间戳）、工程 `data/` 落地、数据集注册 |
 | 4 | 波形可视化 | 已完成 | Canvas 多通道波形、viewport 降采样、光标、缩放平移、Marker 叠加 |
 | 5 | 时域信号分析 | 已完成 | 通道/区间统计，结果写入 `analysis/*.json` |
 | 5B | 数字滤波 | 已完成 | 去直流 / 低通 / 高通 / 带通 / 陷波，结果写入新数据集 |
@@ -29,11 +29,11 @@
 | 8A | 数据发生器 | 已完成 | 离线合成波形并写入工程 JSON |
 | 8B | 实时数据 / Virtual DAQ | 已完成 | 状态机、进程内组包校验、环形缓冲、Live 波形、停止后写入工程 |
 | 9 | 任务系统 | 已完成 | 导入 / 生成 / 滤波 / 时域 / 频谱 / 导出进入任务列表；暂停、继续、取消、重试 |
-| 10 | 数据导出 | 已完成 | CSV / TXT / JSON 写入 `exports/`，走任务系统；无私有二进制 |
+| 10 | 数据导出 | 已完成 | CSV / TXT / JSON / DSB 写入 `exports/`，走任务系统 |
 | 11 | 设置系统 | 已完成 | 语言、主题、日志级别、自动保存、数据默认值、波形视口缓存；界面走 i18n |
 | 12 | 测试支持 / E2E | 已完成 | Playwright Electron 冒烟；`test-data/` 分类资产；CI 跑 typecheck/lint/Vitest。未做安装包 E2E |
 
-当前导航页均已落地业务。DataScope 私有二进制导出尚未做。
+当前导航页均已落地业务。V1.0 Clean 功能链已闭合。
 
 ## 已完成能力
 
@@ -54,7 +54,7 @@
 
 ### Phase 3 数据导入
 
-- 格式：CSV / TXT（表头 `timestamp,ch1,...` 或 `TIME_1,RE_1,...`）、JSON 行主序或通道主序
+- 格式：CSV / TXT（表头 `timestamp,ch1,...` 或 `TIME_1,RE_1,...`）、JSON 行主序或通道主序、DataScope Binary（`.dsb`）
 - 时间戳：数字秒，或 `YYYY-MM-DD HH:mm:ss.frac` 日期时间（用于 PERG 等生理信号 CSV）
 - 校验：空文件、缺表头、列不一致、非数字、NaN/Infinity、非法时间戳、中文路径等
 - 数据浏览：列表、搜索、重命名、删除、通道统计
@@ -119,12 +119,12 @@
 
 ### Phase 10 数据导出
 
-- 格式：CSV（逗号）、TXT（制表符）、JSON（行主序 `[timestamp, ch…]`），可再导入
+- 格式：CSV（逗号）、TXT（制表符）、JSON（行主序 `[timestamp, ch…]`）、DSB（`DSB1` 小端 Float64 + CRC32），可再导入
 - 可选通道与采样区间；写入工程 `exports/`，重名自动加序号
 - 走 `taskService`（`kind: export`），协作检查点与临时文件，取消时删除 `.tmp`
 - 磁盘满 / 权限 / 路径错误映射为 `FILE_DISK_FULL` / `FILE_PERMISSION` / `FILE_NOT_FOUND`
 - 页面 `ExportView`；数据浏览与工作台可进入
-- 单测：`tests/exporters/serialize.spec.ts`（含 CSV/TXT/JSON 往返解析）
+- 单测：`tests/exporters/serialize.spec.ts`（含 CSV/TXT/JSON 往返解析）、`tests/formats/dsb.spec.ts`
 
 ### Phase 11 设置与国际化
 
@@ -168,6 +168,7 @@
 - `tests/i18n/translate.spec.ts`
 - `tests/datasets/lruCache.spec.ts`
 - `tests/testDataCatalog.spec.ts`
+- `tests/formats/dsb.spec.ts`
 
 fixtures：`tests/fixtures/csv/*`、`tests/fixtures/json/normal.json`；工程级测试数据：`test-data/`；示例数据：`samples/`（含 `perg-ioba-0001.csv`）。E2E：`e2e/smoke.spec.ts`。
 
@@ -183,7 +184,7 @@ npm run test:e2e
 
 ## 建议下一阶段
 
-V1.0 功能链（工程 → 导入 → 可视化 → 分析 → Virtual DAQ → 任务 → 导出 → 设置 → E2E）已闭合。下一步更合理的是打 **`v1.0-clean` 标签**，或补 PRD 中尚未做的 **DataScope 私有二进制导出**。主进程错误文案 i18n 可以后补。故障注入只在 `testing-lab`，不要和 Clean 实现混在一起。安装包级 E2E 也仍可后补。
+V1.0 功能链（工程 → 导入 → 可视化 → 分析 → Virtual DAQ → 任务 → 导出含 DSB → 设置 → E2E）已闭合。下一步更合理的是打 **`v1.0-clean` 标签**。主进程错误文案 i18n、安装包级 E2E 可以后补。故障注入只在 `testing-lab`，不要和 Clean 实现混在一起。
 
 ## 维护规则
 

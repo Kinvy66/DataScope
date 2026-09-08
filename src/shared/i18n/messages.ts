@@ -187,7 +187,7 @@ export const messages = {
     '查看已导入数据集、通道信息和 Marker，并在下方打开波形工作区。',
     'Inspect imported datasets, channels, and markers, and open the waveform workspace below.'
   ),
-  'data.needProject': pair('请先新建或打开工程，然后导入 CSV / TXT / JSON 数据。', 'Create or open a project, then import CSV / TXT / JSON data.'),
+  'data.needProject': pair('请先新建或打开工程，然后导入 CSV / TXT / JSON / DSB 数据。', 'Create or open a project, then import CSV / TXT / JSON / DSB data.'),
   'data.fileList': pair('文件列表', 'Files'),
   'data.import': pair('导入', 'Import'),
   'data.searchPlaceholder': pair('搜索名称、通道或格式', 'Search name, channel, or format'),
@@ -371,8 +371,8 @@ export const messages = {
   'export.kicker': pair('Export', 'Export'),
   'export.title': pair('数据导出', 'Data export'),
   'export.desc': pair(
-    '将当前数据集导出为 CSV / TXT / JSON，写入工程的 exports 目录。导出走任务系统，可暂停或取消。',
-    'Export the current dataset as CSV / TXT / JSON into the project exports folder. Export runs as a task and can be paused or cancelled.'
+    '将当前数据集导出为 CSV / TXT / JSON / DSB，写入工程的 exports 目录。导出走任务系统，可暂停或取消。',
+    'Export the current dataset as CSV / TXT / JSON / DSB into the project exports folder. Export runs as a task and can be paused or cancelled.'
   ),
   'export.needProject': pair('请先新建或打开工程，并导入数据集后再导出。', 'Create or open a project and import a dataset before exporting.'),
   'export.noDataset': pair('当前工程还没有可导出的数据集。', 'This project has no dataset to export.'),
@@ -387,7 +387,10 @@ export const messages = {
   ),
   'export.help3': pair('文件写入当前工程 exports/，重名会自动加序号。', 'Files go to the current project exports/ folder. Duplicate names get a numeric suffix.'),
   'export.help4': pair('磁盘满、没有权限或路径无效会显示错误，不会假装成功。', 'Disk full, permission, or invalid path errors are shown; export does not pretend to succeed.'),
-  'export.help5': pair('私有二进制格式尚未支持。', 'A private binary format is not supported yet.'),
+  'export.help5': pair(
+    'DSB 是 DataScope 私有二进制（魔数 DSB1、小端 Float64、CRC32），可再导入。',
+    'DSB is the DataScope private binary format (magic DSB1, little-endian float64, CRC32) and can be imported again.'
+  ),
   'export.last': pair('最近一次导出', 'Last export'),
 
   'task.kicker': pair('Task Manager', 'Task Manager'),

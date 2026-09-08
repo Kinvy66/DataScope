@@ -1,16 +1,18 @@
-export const EXPORT_FORMATS = ['csv', 'txt', 'json'] as const
+export const EXPORT_FORMATS = ['csv', 'txt', 'json', 'dsb'] as const
 export type ExportFormat = (typeof EXPORT_FORMATS)[number]
 
 export const EXPORT_FORMAT_LABELS: Record<ExportFormat, string> = {
   csv: 'CSV',
   txt: 'TXT',
-  json: 'JSON'
+  json: 'JSON',
+  dsb: 'DSB'
 }
 
 export const EXPORT_EXTENSIONS: Record<ExportFormat, string> = {
   csv: '.csv',
   txt: '.txt',
-  json: '.json'
+  json: '.json',
+  dsb: '.dsb'
 }
 
 export interface ExportRequest {

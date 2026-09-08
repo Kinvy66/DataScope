@@ -1,6 +1,6 @@
 # DataScope
 
-DataScope 是一个用于软件测试学习的多通道时序数据桌面软件。当前版本覆盖 Phase 1–12 与 5B：基础框架、工程管理、数据导入、波形可视化、时域分析、数字滤波、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视、任务系统、数据导出、应用设置与中英界面、Playwright Electron 冒烟与分类测试数据。
+DataScope 是一个用于软件测试学习的多通道时序数据桌面软件。当前版本覆盖 Phase 1–12 与 5B，并支持 DataScope Binary（`.dsb`）导出与再导入。
 
 使用手册（中文，含阶段标注）：[`docs/wiki/README.md`](docs/wiki/README.md)
 
@@ -61,6 +61,8 @@ timestamp,ch1,ch2,ch3
 
 JSON 支持行主序 `[timestamp, ch1, ...]` 或通道主序 `samples[channel][sample]`。
 
+DataScope Binary（`.dsb`）是带 CRC 的小端 Float64 通道主序文件，可从「数据导出」写出后再导入。
+
 ## 架构
 
 - Renderer：UI、页面状态、波形绘制
@@ -81,6 +83,6 @@ Marker 路径：`表单 / Cursor → shared/markers → project.json → 波形�
 
 任务路径：`导入 / 生成 / 滤波 / 分析 / 导出 → TaskService（可暂停 / 取消 / 重试）→ 任务管理页`
 
-导出路径：`Dataset → 通道/区间 → CSV / TXT / JSON → exports/`
+导出路径：`Dataset → 通道/区间 → CSV / TXT / JSON / DSB → exports/`
 
 设置路径：`应用设置 → settings.json`；语言走 `src/shared/i18n`；波形视口可 LRU 缓存降采样结果

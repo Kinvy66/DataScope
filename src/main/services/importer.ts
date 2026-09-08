@@ -5,6 +5,8 @@ import { LARGE_DATASET_THRESHOLD } from '@shared/constants'
 import { DataScopeError } from '@shared/errors'
 import { parseCSV, parseTXT } from '@shared/parsers/csv'
 import { parseJSON } from '@shared/parsers/json'
+import { inferSourceFormat } from '@shared/parsers/format'
+import { decodeDsb } from '@shared/formats/dsb'
 import { validateDatasetName } from '@shared/datasets/query'
 import {
   applyProjectMarkers,
@@ -62,10 +64,10 @@ export async function importDatasetWork(
   const content = await readFile(filePath)
   await ctx.checkpoint()
   ctx.report(0.35, '解析数据')
-  const { text, encoding } = decodeText(content)
-  const dataset = parseContent(text, filePath, format)
+  const parsed = parseImportedBuffer(content, filePath, format)
+  const dataset = parsed.dataset
   dataset.metadata.fileSize = fileStat.size
-  dataset.metadata.encoding = encoding
+  dataset.metadata.encoding = parsed.encoding
   validateDataset(dataset)
 
   if (dataset.sampleCount * dataset.channelCount >= LARGE_DATASET_THRESHOLD) {
@@ -266,11 +268,11 @@ export async function loadProjectDatasets(): Promise<DatasetInfo[]> {
     }
     try {
       const content = await readFile(absolutePath)
-      const { text, encoding } = decodeText(content)
-      const dataset = parseContent(text, absolutePath, ref.format)
+      const parsed = parseImportedBuffer(content, absolutePath, ref.format)
+      const dataset = parsed.dataset
       dataset.id = ref.id
       dataset.name = ref.name
-      dataset.metadata.encoding = encoding
+      dataset.metadata.encoding = parsed.encoding
       dataset.markers = applyProjectMarkers(dataset, project.file.markers)
       validateDataset(dataset)
       loaded.push(datasetRegistry.add(dataset))
@@ -368,10 +370,24 @@ function persistMarkers(datasetId: string, markers: Marker[], logMessage: string
   return info
 }
 
+function parseImportedBuffer(
+  buffer: Buffer,
+  filePath: string,
+  format: SourceFormat
+): { dataset: Dataset; encoding: string } {
+  if (format === 'dsb') {
+    const dataset = decodeDsb(buffer, filePath)
+    return { dataset, encoding: dataset.metadata.encoding }
+  }
+  const { text, encoding } = decodeText(buffer)
+  return { dataset: parseContent(text, filePath, format), encoding }
+}
+
 function parseContent(content: string, filePath: string, format: SourceFormat): Dataset {
   if (format === 'csv') return parseCSV(content, filePath)
   if (format === 'txt') return parseTXT(content, filePath)
-  return parseJSON(content, filePath)
+  if (format === 'json') return parseJSON(content, filePath)
+  throw new DataScopeError('INVALID_FORMAT', `不支持的文本导入格式: ${format}`)
 }
 
 function uniqueFileName(directory: string, fileName: string): string {
@@ -407,8 +423,5 @@ export function decodeText(buffer: Buffer): { text: string; encoding: string } {
 }
 
 export function inferFormatFromPath(filePath: string): SourceFormat {
-  const ext = extname(filePath).toLowerCase()
-  if (ext === '.json') return 'json'
-  if (ext === '.txt') return 'txt'
-  return 'csv'
+  return inferSourceFormat(filePath)
 }

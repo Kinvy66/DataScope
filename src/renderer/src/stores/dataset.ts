@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { filterDatasets } from '@shared/datasets/query'
 import { nextMarkerName } from '@shared/markers/manage'
+import { inferSourceFormat } from '@shared/parsers/format'
 import type { ChannelStatistics, DatasetInfo, MarkerDraft, SourceFormat } from '@shared/types/dataset'
 import { tt } from '../i18n'
 import { getErrorMessage } from '../utils/format'
@@ -50,10 +51,11 @@ export const useDatasetStore = defineStore('dataset', () => {
 
     const filePath = await window.datascope.dialog.openFile(
       [
-        { name: tt('dialog.filterData'), extensions: ['csv', 'txt', 'json'] },
+        { name: tt('dialog.filterData'), extensions: ['csv', 'txt', 'json', 'dsb'] },
         { name: 'CSV', extensions: ['csv'] },
         { name: 'TXT', extensions: ['txt'] },
-        { name: 'JSON', extensions: ['json'] }
+        { name: 'JSON', extensions: ['json'] },
+        { name: 'DSB', extensions: ['dsb'] }
       ],
       tt('dialog.importTitle')
     )
@@ -201,8 +203,5 @@ export const useDatasetStore = defineStore('dataset', () => {
 })
 
 function inferFormat(filePath: string): SourceFormat {
-  const lower = filePath.toLowerCase()
-  if (lower.endsWith('.json')) return 'json'
-  if (lower.endsWith('.txt')) return 'txt'
-  return 'csv'
+  return inferSourceFormat(filePath)
 }

@@ -10,7 +10,7 @@
 | --- | --- | --- | --- |
 | 1 | [Phase 1 基础框架](./Phase%201%20基础框架%20Prompt.md) | 已完成 | Electron + Vue 壳、布局、主题、日志 |
 | 2 | [Phase 2 工程管理](./Phase%202%20工程管理%20Prompt.md) | 已完成 | 新建 / 打开 / 保存 / 关闭工程 |
-| 3 | [Phase 3 数据导入](./Phase%203%20数据导入%20Prompt.md) | 已完成 | CSV / TXT / JSON、数据浏览 |
+| 3 | [Phase 3 数据导入](./Phase%203%20数据导入%20Prompt.md) | 已完成 | CSV / TXT / JSON / DSB、数据浏览 |
 | 4 | [Phase 4 波形可视化](./Phase%204%20波形可视化%20Prompt.md) | 已完成 | Canvas 波形、降采样、光标 |
 | 5 | [Phase 5 时域信号分析](./Phase%205%20时域信号分析%20Prompt.md) | 已完成 | 统计量、analysis JSON |
 | 5B | （无独立任务书，见 PRD §5.4） | 已完成 | 去直流 / 低通 / 高通 / 带通 / 陷波 |
@@ -19,7 +19,7 @@
 | 8A | [Phase 8A 数据发生器](./Phase%208A%20数据发生器%20Prompt.md) | 已完成 | 离线合成波形写入工程 |
 | 8B | [Phase 8B 实时监视](./Phase%208B%20实时监视%20Prompt.md) | 已完成 | Virtual DAQ、Live Monitor |
 | 9 | [Phase 9 任务系统](./Phase%209%20任务系统%20Prompt.md) | 已完成 | 后台任务进度与取消 |
-| 10 | [Phase 10 数据导出](./Phase%2010%20数据导出%20Prompt.md) | 已完成 | CSV / TXT / JSON 写入 exports/ |
+| 10 | [Phase 10 数据导出](./Phase%2010%20数据导出%20Prompt.md) | 已完成 | CSV / TXT / JSON / DSB 写入 exports/ |
 | 11 | [Phase 11 设置与国际化](./Phase%2011%20设置与国际化%20Prompt.md) | 已完成 | 语言、自动保存、数据默认值、界面 i18n |
 | 12 | [Phase 12 测试支持](./Phase%2012%20测试支持%20Prompt.md) | 已完成 | Playwright Electron 冒烟 + `test-data/` |
 
