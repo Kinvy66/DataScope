@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, stat, unlink } from 'node:fs/promises'
+import { copyFile, mkdir, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import { existsSync } from 'node:fs'
 import { LARGE_DATASET_THRESHOLD } from '@shared/constants'
@@ -7,7 +7,9 @@ import { parseCSV, parseTXT } from '@shared/parsers/csv'
 import { parseJSON } from '@shared/parsers/json'
 import { validateDatasetName } from '@shared/datasets/query'
 import { validateDataset } from '@shared/parsers/dataset'
+import { generateDatasetFromRequest, serializeGeneratedJson } from '@shared/generators/waveform'
 import type { Dataset, DatasetInfo, SourceFormat } from '@shared/types/dataset'
+import type { GeneratorRequest } from '@shared/types/generator'
 import type { DataFileRef } from '@shared/types/project'
 import { logger } from './logger'
 import { projectService } from './project'
@@ -71,6 +73,58 @@ export async function importDataset(filePath: string, format: SourceFormat): Pro
     channels: dataset.channelCount,
     samples: dataset.sampleCount,
     format
+  })
+
+  return info
+}
+
+export async function generateDataset(request: GeneratorRequest): Promise<DatasetInfo> {
+  const project = projectService.requireOpen()
+  const dataset = generateDatasetFromRequest(request)
+  validateDataset(dataset)
+
+  if (dataset.sampleCount * dataset.channelCount >= LARGE_DATASET_THRESHOLD) {
+    await logger.write('WARNING', 'Large dataset detected', 'main', {
+      samples: dataset.sampleCount,
+      channels: dataset.channelCount,
+      source: 'generator'
+    })
+  }
+
+  const dataDir = projectService.dataDirectory()
+  await mkdir(dataDir, { recursive: true })
+  const stem = dataset.name.replace(/[<>:"/\\|?*]/g, '_').slice(0, 48) || 'generated'
+  const targetName = uniqueFileName(dataDir, `${stem}.json`)
+  const targetPath = join(dataDir, targetName)
+  const json = serializeGeneratedJson(dataset)
+  await writeFile(targetPath, json, 'utf8')
+  dataset.metadata.sourcePath = targetPath
+  dataset.metadata.fileSize = Buffer.byteLength(json)
+
+  const info = datasetRegistry.add(dataset)
+  const ref: DataFileRef = {
+    id: dataset.id,
+    name: dataset.name,
+    relativePath: `data/${targetName}`,
+    format: 'json',
+    sampleRate: dataset.sampleRate,
+    channelCount: dataset.channelCount,
+    sampleCount: dataset.sampleCount,
+    importedAt: dataset.metadata.importedAt
+  }
+
+  project.file.dataFiles = [...project.file.dataFiles, ref]
+  project.file.channelCount = Math.max(project.file.channelCount, dataset.channelCount)
+  if (dataset.sampleRate > 0) {
+    project.file.sampleRate = dataset.sampleRate
+  }
+  projectService.markDirty()
+
+  await logger.write('INFO', 'Dataset generated', 'main', {
+    name: dataset.name,
+    kind: request.kind,
+    channels: dataset.channelCount,
+    samples: dataset.sampleCount
   })
 
   return info

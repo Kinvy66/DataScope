@@ -8,6 +8,7 @@ import type { LogQuery, LogWritePayload } from '@shared/types/log'
 import type { CreateProjectInput, UpdateProjectInput } from '@shared/types/project'
 import type { AnalysisRequest } from '@shared/types/analysis'
 import type { SpectrumRequest } from '@shared/types/spectrum'
+import type { GeneratorRequest } from '@shared/types/generator'
 import type { SourceFormat, ViewportRequest } from '@shared/types/dataset'
 import { logger } from '../services/logger'
 import { settingsService } from '../services/settings'
@@ -18,6 +19,7 @@ import {
   importDataset,
   inferFormatFromPath,
   loadProjectDatasets,
+  generateDataset,
   removeDataset,
   renameDataset
 } from '../services/importer'
@@ -188,6 +190,10 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.DatasetAnalyzeSpectrum, async (_event, request: SpectrumRequest) => {
     return wrap(() => runSpectrumAnalysis(request))
+  })
+
+  ipcMain.handle(IpcChannel.DatasetGenerate, async (_event, request: GeneratorRequest) => {
+    return wrap(() => generateDataset(request))
   })
 }
 

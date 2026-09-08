@@ -9,6 +9,7 @@ const route = useRoute()
 const appStore = useAppStore()
 const projectStore = useProjectStore()
 const datasetStore = useDatasetStore()
+const appIcon = `${import.meta.env.BASE_URL}icon.png`
 
 function toggleTheme(): void {
   void appStore.setTheme(appStore.settings.theme === 'dark' ? 'light' : 'dark')
@@ -18,7 +19,7 @@ function toggleTheme(): void {
 <template>
   <header class="toolbar">
     <div class="brand">
-      <span class="mark"></span>
+      <img class="logo" :src="appIcon" width="22" height="22" alt="" />
       <strong>DataScope</strong>
       <span class="ver">V1.0</span>
     </div>
@@ -41,6 +42,9 @@ function toggleTheme(): void {
     </button>
     <button class="btn btn-ghost" type="button" :class="{ on: route.path === '/spectrum' }" @click="router.push('/spectrum')">
       频谱分析
+    </button>
+    <button class="btn btn-ghost" type="button" :class="{ on: route.path === '/generator' }" @click="router.push('/generator')">
+      发生器
     </button>
     <button class="btn" type="button" @click="toggleTheme">
       {{ appStore.settings.theme === 'dark' ? '浅色主题' : '深色主题' }}
@@ -65,12 +69,11 @@ function toggleTheme(): void {
   margin-right: 8px;
 }
 
-.mark {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  box-shadow: 0 0 12px var(--accent);
+.logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  display: block;
 }
 
 .ver {

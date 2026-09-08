@@ -1,4 +1,4 @@
-import { BrowserWindow, shell } from 'electron'
+import { BrowserWindow, nativeImage, shell } from 'electron'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { is } from '@electron-toolkit/utils'
@@ -10,7 +10,21 @@ function resolvePreloadPath(): string {
   return existsSync(mjsPath) ? mjsPath : jsPath
 }
 
+function resolveWindowIcon(): Electron.NativeImage | undefined {
+  const candidates = [
+    join(__dirname, '../../resources/icon.png'),
+    join(process.cwd(), 'resources/icon.png')
+  ]
+  for (const filePath of candidates) {
+    if (!existsSync(filePath)) continue
+    const image = nativeImage.createFromPath(filePath)
+    if (!image.isEmpty()) return image
+  }
+  return undefined
+}
+
 export function createMainWindow(): BrowserWindow {
+  const icon = resolveWindowIcon()
   const window = new BrowserWindow({
     width: 1440,
     height: 920,
@@ -20,6 +34,7 @@ export function createMainWindow(): BrowserWindow {
     autoHideMenuBar: true,
     title: APP_NAME,
     backgroundColor: '#0b0f14',
+    ...(icon ? { icon } : {}),
     webPreferences: {
       preload: resolvePreloadPath(),
       sandbox: false,

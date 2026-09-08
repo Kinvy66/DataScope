@@ -8,6 +8,7 @@ import type {
 } from './project'
 import type { AnalysisRequest, AnalysisResult } from './analysis'
 import type { SpectrumRequest, SpectrumResult } from './spectrum'
+import type { GeneratorRequest } from './generator'
 import type {
   ChannelStatistics,
   DatasetInfo,
@@ -62,6 +63,7 @@ export interface DataScopeAPI {
     remove: (datasetId: string) => Promise<void>
     analyze: (request: AnalysisRequest) => Promise<AnalysisResult>
     analyzeSpectrum: (request: SpectrumRequest) => Promise<SpectrumResult>
+    generate: (request: GeneratorRequest) => Promise<DatasetInfo>
   }
 }
 
