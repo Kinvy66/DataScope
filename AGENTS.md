@@ -16,10 +16,11 @@ DataScope 是桌面端多通道时序数据采集 / 浏览 / 波形 / 分析软�
 
 1. 当前源码与测试（唯一“已实现”依据）
 2. `docs/PRD.md`（产品需求；`docs/DataScope PRD.md` 视为副本，改需求只改 `docs/PRD.md`）
-3. `README.md`
-4. 本文件
-5. `docs/AI_DEVELOPMENT_PROMPT.md`（自动迭代工作流）
-6. `docs/dev_plan/` 下的阶段 Prompt（历史任务书，不是必须机械执行的 Phase 编号表）
+3. `docs/PROJECT_STATUS.md`（已合入分支的进度快照；与代码冲突时以代码为准并回写本文）
+4. `README.md`
+5. 本文件
+6. `docs/AI_DEVELOPMENT_PROMPT.md`（自动迭代工作流）
+7. `docs/dev_plan/` 下的阶段 Prompt（历史任务书，不是必须机械执行的 Phase 编号表）
 
 实现与 PRD 冲突时遵循 PRD。需求矛盾或无法实现时先指出问题并给出方案，禁止偷偷改需求。不要为了赶进度发明假功能。
 
@@ -33,7 +34,7 @@ DataScope 是桌面端多通道时序数据采集 / 浏览 / 波形 / 分析软�
 - 核心逻辑写成可单测的纯函数 / Service / Domain，不要堆进 Vue 组件。禁止用 `any`、`TODO` 顶替核心行为、或用 Mock 冒充真实文件 / 解析 / IPC。
 - UI 文案用中文；标识符、文件名、提交说明用英文。
 
-判断实现进度时以代码为准，不要只信 README 或空的 `docs/PROJECT_STATUS.md`。README 记载的快照是：工程管理、CSV/TXT/JSON 导入、数据浏览、Canvas 波形（含 viewport 降采样）已有；实时监视、高级分析、FFT、Marker UI、发生器、任务系统等多为导航占位。
+判断实现进度时先读 `docs/PROJECT_STATUS.md`，再核对源码。未合入的本地草稿不能写成已完成。占位页（`PhasePage.vue`）不是已实现功能。
 
 ## 仓库地图
 
@@ -122,8 +123,9 @@ npm run build
 
 ## Git
 
-- 用户未明确要求时不要 commit / push / 改 git config / 跳过 hook。
-- 用户要求提交时：不纳入 `.env`、密钥、`out/`、`dist/`、`release/`、个人文件；message 用 `feat:` / `fix:` / `test:` / `refactor:` 说明原因。
+- 完成可验收增量后：更新 `docs/PROJECT_STATUS.md`（日期、进度基准、阶段表、测试、下一阶段），创建 commit，然后立即 `git push` 到 `origin` 当前分支。不要只停在本地。
+- 问答、探索或未完成草稿不要擅自 commit。不要改 git config、跳过 hook、force push。
+- 提交时不纳入 `.env`、密钥、`out/`、`dist/`、`release/`、个人文件；message 用 `feat:` / `fix:` / `test:` / `refactor:` / `docs:` 说明原因。
 - 不要在 V1.0 Clean 工作区制造缺陷。不要提交构建产物。
 
 ## 明确禁止
@@ -141,6 +143,7 @@ npm run build
 | 文件 | 用途 |
 | --- | --- |
 | `docs/PRD.md` | 产品需求 |
+| `docs/PROJECT_STATUS.md` | 已合入进度；阶段完成后更新并随 commit 推送 |
 | `docs/AI_DEVELOPMENT_PROMPT.md` | 自动迭代开发（含完成后的 Summary 格式） |
 | `docs/dev_plan/DataScope Vibe Coding 总控 Prompt.md` | 分阶段实施约束 |
 | `docs/dev_plan/Phase * Prompt.md` | 各阶段历史任务书 |
