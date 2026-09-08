@@ -1,0 +1,196 @@
+<script setup lang="ts">
+import { useDatasetStore } from '../stores/dataset'
+import { useProjectStore } from '../stores/project'
+import WaveformViewer from '../components/waveform/WaveformViewer.vue'
+import { formatDuration, formatNumber, formatTimestamp } from '../utils/format'
+
+const datasetStore = useDatasetStore()
+const projectStore = useProjectStore()
+</script>
+
+<template>
+  <section class="page data-page">
+    <header class="page-header">
+      <div class="kicker">Data Browser</div>
+      <h1>数据浏览</h1>
+      <p>查看已导入数据集、通道信息和统计，并在下方打开波形工作区。</p>
+    </header>
+
+    <div v-if="!projectStore.hasProject" class="panel empty-state">
+      <p>请先新建或打开工程，然后导入 CSV / TXT / JSON 数据。</p>
+    </div>
+
+    <div v-else class="browser">
+      <aside class="panel list">
+        <div class="list-head">
+          <strong>文件列表</strong>
+          <button class="btn btn-primary" type="button" :disabled="datasetStore.busy" @click="datasetStore.importData()">
+            导入
+          </button>
+        </div>
+        <button
+          v-for="item in datasetStore.datasets"
+          :key="item.id"
+          class="file"
+          :class="{ active: item.id === datasetStore.selectedId }"
+          type="button"
+          @click="datasetStore.select(item.id)"
+        >
+          <span>{{ item.name }}</span>
+          <small>{{ item.channelCount }} ch · {{ item.sampleCount.toLocaleString() }}</small>
+        </button>
+        <p v-if="datasetStore.datasets.length === 0" class="muted">还没有导入数据。</p>
+      </aside>
+
+      <div class="detail">
+        <article v-if="datasetStore.selected" class="panel info">
+          <h2>数据集信息</h2>
+          <dl>
+            <div><dt>名称</dt><dd>{{ datasetStore.selected.name }}</dd></div>
+            <div><dt>采样率</dt><dd>{{ formatNumber(datasetStore.selected.sampleRate, 3) }} Hz</dd></div>
+            <div><dt>通道数</dt><dd>{{ datasetStore.selected.channelCount }}</dd></div>
+            <div><dt>采样点数</dt><dd>{{ datasetStore.selected.sampleCount.toLocaleString() }}</dd></div>
+            <div><dt>时长</dt><dd>{{ formatDuration(datasetStore.selected.duration) }}</dd></div>
+            <div><dt>起始时间</dt><dd>{{ formatNumber(datasetStore.selected.startTime, 6) }} s</dd></div>
+            <div><dt>来源</dt><dd>{{ datasetStore.selected.metadata.sourceFormat.toUpperCase() }}</dd></div>
+            <div><dt>导入时间</dt><dd>{{ formatTimestamp(datasetStore.selected.metadata.importedAt) }}</dd></div>
+          </dl>
+        </article>
+
+        <article v-if="datasetStore.selected" class="panel info">
+          <h2>通道列表</h2>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>通道</th>
+                <th>颜色</th>
+                <th>单位</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="channel in datasetStore.selected.channels" :key="channel.id">
+                <td>{{ channel.name }}</td>
+                <td><span class="dot" :style="{ background: channel.color }"></span></td>
+                <td>{{ channel.unit || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+
+        <article v-if="datasetStore.statistics.length" class="panel info wide">
+          <h2>统计</h2>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>通道</th>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Mean</th>
+                <th>RMS</th>
+                <th>Peak-Peak</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in datasetStore.statistics" :key="row.channelId">
+                <td>{{ row.channelName }}</td>
+                <td>{{ formatNumber(row.min) }}</td>
+                <td>{{ formatNumber(row.max) }}</td>
+                <td>{{ formatNumber(row.mean) }}</td>
+                <td>{{ formatNumber(row.rms) }}</td>
+                <td>{{ formatNumber(row.peakToPeak) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+      </div>
+    </div>
+
+    <WaveformViewer v-if="datasetStore.selected" :dataset="datasetStore.selected" />
+  </section>
+</template>
+
+<style scoped>
+.data-page {
+  overflow: hidden;
+}
+
+.browser {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 12px;
+  min-height: 220px;
+}
+
+.list,
+.info {
+  padding: 12px;
+}
+
+.list-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.file {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+  background: var(--bg-panel-alt);
+  border-radius: 8px;
+}
+
+.file small {
+  color: var(--text-muted);
+}
+
+.file.active {
+  border-color: var(--accent);
+}
+
+.detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  min-width: 0;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  margin: 0;
+}
+
+dt {
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+dd {
+  margin: 4px 0 0;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+h2 {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+</style>
