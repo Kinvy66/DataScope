@@ -73,6 +73,10 @@ const datasetStore = useDatasetStore()
             <AppIcon name="zap" />
             数据发生器
           </button>
+          <button class="btn" type="button" @click="router.push('/tasks')">
+            <AppIcon name="listTodo" />
+            任务管理
+          </button>
         </div>
       </article>
     </div>

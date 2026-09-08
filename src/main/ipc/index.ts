@@ -12,6 +12,7 @@ import type { SpectrumRequest } from '@shared/types/spectrum'
 import type { GeneratorRequest } from '@shared/types/generator'
 import type { MarkerDraft, SourceFormat, ViewportRequest } from '@shared/types/dataset'
 import type { DaqCommand, LiveConfig, LiveViewportRequest } from '@shared/types/live'
+import type { TaskCommand } from '@shared/types/task'
 import { logger } from '../services/logger'
 import { settingsService } from '../services/settings'
 import { projectService } from '../services/project'
@@ -30,6 +31,8 @@ import {
   removeMarker
 } from '../services/importer'
 import { liveService } from '../services/live'
+import { registerTaskWorkers } from '../services/taskJobs'
+import { taskService } from '../services/tasks'
 
 let allowQuit = false
 
@@ -38,6 +41,7 @@ function dialogWindow(): BrowserWindow | undefined {
 }
 
 export function registerIpcHandlers(): void {
+  registerTaskWorkers()
   ipcMain.handle(IpcChannel.AppGetInfo, async (): Promise<AppInfo> => {
     return {
       name: APP_NAME,
@@ -145,6 +149,7 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.ProjectClose, async (_event, action: 'save' | 'discard') => {
     return wrap(async () => {
+      await taskService.cancelAll()
       if (action === 'save' && projectService.getCurrent()) {
         await projectService.save()
       }
@@ -242,6 +247,18 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannel.LiveCapture, async (_event, name: string) => {
     return wrap(() => liveService.capture(name))
   })
+
+  ipcMain.handle(IpcChannel.TaskList, async () => taskService.list())
+
+  ipcMain.handle(IpcChannel.TaskGet, async (_event, taskId: string) => {
+    return wrap(() => taskService.get(taskId))
+  })
+
+  ipcMain.handle(IpcChannel.TaskCommand, async (_event, taskId: string, command: TaskCommand) => {
+    return wrap(() => taskService.command(taskId, command))
+  })
+
+  ipcMain.handle(IpcChannel.TaskClearFinished, async () => taskService.clearFinished())
 }
 
 export function attachCloseGuard(window: BrowserWindow): void {
@@ -258,7 +275,8 @@ async function wrap<T>(factory: () => Promise<T> | T): Promise<T> {
     return await factory()
   } catch (error) {
     const payload = toErrorPayload(error)
-    await logger.write('ERROR', payload.message, 'main', {
+    const level = payload.code === 'TASK_CANCELLED' ? 'INFO' : 'ERROR'
+    await logger.write(level, payload.message, 'main', {
       code: payload.code
     })
     throw new Error(payload.message)

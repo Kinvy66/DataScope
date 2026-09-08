@@ -14,6 +14,7 @@ export type ErrorCode =
   | 'PROJECT_NOT_OPEN'
   | 'PROJECT_DIRTY'
   | 'VALIDATION_ERROR'
+  | 'TASK_CANCELLED'
   | 'IPC_ERROR'
   | 'UNKNOWN'
 

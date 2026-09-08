@@ -16,22 +16,41 @@ import {
   updateMarker as applyMarkerDraft
 } from '@shared/markers/manage'
 import { validateDataset } from '@shared/parsers/dataset'
-import { applyFilterToDataset } from '@shared/filters/apply'
+import { applyFilterToDatasetAsync } from '@shared/filters/apply'
 import { describeFilter } from '@shared/algorithms/filter'
-import { generateDatasetFromRequest, serializeGeneratedJson } from '@shared/generators/waveform'
+import { generateChannel, serializeGeneratedJson } from '@shared/generators/waveform'
+import { resolveSampleCount, validateGeneratorRequest } from '@shared/generators/validate'
+import { buildDataset } from '@shared/parsers/common'
 import type { Dataset, DatasetInfo, Marker, MarkerDraft, SourceFormat } from '@shared/types/dataset'
 import type { FilterRequest } from '@shared/types/filter'
 import type { GeneratorRequest } from '@shared/types/generator'
 import type { DataFileRef } from '@shared/types/project'
+import type { TaskContext } from '@shared/types/task'
 import { logger } from './logger'
 import { projectService } from './project'
 import { datasetRegistry } from './datasetRegistry'
+import { taskService } from './tasks'
 
 export async function importDataset(filePath: string, format: SourceFormat): Promise<DatasetInfo> {
+  return taskService.run<DatasetInfo>(`导入 ${basename(filePath)}`, {
+    kind: 'import',
+    filePath,
+    format
+  })
+}
+
+export async function importDatasetWork(
+  filePath: string,
+  format: SourceFormat,
+  ctx: TaskContext
+): Promise<DatasetInfo> {
   const project = projectService.requireOpen()
   if (!existsSync(filePath)) {
     throw new DataScopeError('FILE_NOT_FOUND', `文件不存在: ${filePath}`, { path: filePath })
   }
+
+  await ctx.checkpoint()
+  ctx.report(0.08, '读取文件')
 
   let fileStat
   try {
@@ -41,6 +60,8 @@ export async function importDataset(filePath: string, format: SourceFormat): Pro
   }
 
   const content = await readFile(filePath)
+  await ctx.checkpoint()
+  ctx.report(0.35, '解析数据')
   const { text, encoding } = decodeText(content)
   const dataset = parseContent(text, filePath, format)
   dataset.metadata.fileSize = fileStat.size
@@ -54,6 +75,8 @@ export async function importDataset(filePath: string, format: SourceFormat): Pro
     })
   }
 
+  await ctx.checkpoint()
+  ctx.report(0.72, '写入工程')
   const dataDir = projectService.dataDirectory()
   await mkdir(dataDir, { recursive: true })
   const targetName = uniqueFileName(dataDir, basename(filePath))
@@ -87,11 +110,48 @@ export async function importDataset(filePath: string, format: SourceFormat): Pro
     format
   })
 
+  ctx.report(1, '完成')
   return info
 }
 
 export async function generateDataset(request: GeneratorRequest): Promise<DatasetInfo> {
-  const dataset = generateDatasetFromRequest(request)
+  return taskService.run<DatasetInfo>(`生成 ${request.name.trim() || '数据集'}`, {
+    kind: 'generate',
+    request
+  })
+}
+
+export async function generateDatasetWork(
+  request: GeneratorRequest,
+  ctx: TaskContext
+): Promise<DatasetInfo> {
+  const input = validateGeneratorRequest(request)
+  const sampleCount = resolveSampleCount(input.sampleRate, input.duration)
+  const channelNames = Array.from({ length: input.channelCount }, (_, index) => `ch${index + 1}`)
+  const timestamps = Array.from({ length: sampleCount }, (_, n) => n / input.sampleRate)
+  const columns: number[][] = []
+
+  ctx.report(0.04, '正在生成波形')
+  for (let channel = 0; channel < input.channelCount; channel += 1) {
+    await ctx.checkpoint()
+    columns.push(generateChannel(input, channel, sampleCount))
+    ctx.report(
+      0.08 + ((channel + 1) / input.channelCount) * 0.72,
+      `生成通道 ${channel + 1}/${input.channelCount}`
+    )
+  }
+
+  await ctx.checkpoint()
+  ctx.report(0.86, '写入工程')
+  const dataset = buildDataset({
+    name: input.name,
+    table: { channelNames, timestamps, columns },
+    sourcePath: `${input.name}.json`,
+    sourceFormat: 'json',
+    fileSize: 0,
+    encoding: 'utf-8',
+    sampleRateHint: input.sampleRate
+  })
   const info = await saveDatasetToProject(dataset)
   await logger.write('INFO', 'Dataset generated', 'main', {
     name: dataset.name,
@@ -99,10 +159,23 @@ export async function generateDataset(request: GeneratorRequest): Promise<Datase
     channels: dataset.channelCount,
     samples: dataset.sampleCount
   })
+  ctx.report(1, '完成')
   return info
 }
 
 export async function filterDataset(request: FilterRequest): Promise<DatasetInfo> {
+  projectService.requireOpen()
+  if (!request?.datasetId) {
+    throw new DataScopeError('VALIDATION_ERROR', '缺少数据集 ID')
+  }
+  const source = datasetRegistry.get(request.datasetId)
+  return taskService.run<DatasetInfo>(`滤波 · ${source.name}`, {
+    kind: 'filter',
+    request
+  })
+}
+
+export async function filterDatasetWork(request: FilterRequest, ctx: TaskContext): Promise<DatasetInfo> {
   projectService.requireOpen()
   if (!request?.datasetId) {
     throw new DataScopeError('VALIDATION_ERROR', '缺少数据集 ID')
@@ -115,7 +188,14 @@ export async function filterDataset(request: FilterRequest): Promise<DatasetInfo
     channels: request.channelIds.length
   })
 
-  const dataset = applyFilterToDataset(source, request)
+  ctx.report(0.05, '准备滤波')
+  const dataset = await applyFilterToDatasetAsync(source, request, async (index, total) => {
+    await ctx.checkpoint()
+    ctx.report(0.08 + (index / Math.max(total, 1)) * 0.72, `滤波通道 ${index + 1}/${total}`)
+  })
+
+  await ctx.checkpoint()
+  ctx.report(0.86, '写入工程')
   const info = await saveDatasetToProject(dataset)
 
   await logger.write('INFO', 'Filter Complete', 'main', {
@@ -125,6 +205,7 @@ export async function filterDataset(request: FilterRequest): Promise<DatasetInfo
     label: describeFilter(request),
     channels: request.channelIds.length
   })
+  ctx.report(1, '完成')
   return info
 }
 

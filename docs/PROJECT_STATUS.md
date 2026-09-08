@@ -8,8 +8,8 @@
 | 分支 | `master` |
 | 进度基准 | 以本文件所在 commit 为准 |
 | 产品阶段 | V1.0 Clean（禁止故意注入缺陷） |
-| 已完成 | Phase 1–8B + 5B：框架、工程、导入、波形、时域分析、数字滤波、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视 |
-| 建议下一阶段 | 任务系统（9）或数据导出（10） |
+| 已完成 | Phase 1–9 + 5B：框架、工程、导入、波形、时域分析、数字滤波、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视、任务系统 |
+| 建议下一阶段 | 数据导出（10） |
 
 使用手册：[`docs/wiki/README.md`](./wiki/README.md)  
 开发任务书：[`docs/dev_plan/README.md`](./dev_plan/README.md)
@@ -28,12 +28,12 @@
 | 7 | Marker | 已完成 | 添加 / 编辑 / 删除，写入 `project.json`，与波形跳转联动 |
 | 8A | 数据发生器 | 已完成 | 离线合成波形并写入工程 JSON |
 | 8B | 实时数据 / Virtual DAQ | 已完成 | 状态机、进程内组包校验、环形缓冲、Live 波形、停止后写入工程 |
-| 9 | 任务系统 | 未开始 | `Task Manager` 占位 |
+| 9 | 任务系统 | 已完成 | 导入 / 生成 / 滤波 / 时域 / 频谱进入任务列表；暂停、继续、取消、重试 |
 | 10 | 数据导出 | 未开始 | 工程目录有 `exports/`，无导出流程 |
 | 11 | 设置系统 | 部分完成 | 主题与日志级别可用；无完整 i18n |
 | 12 | 测试支持 / E2E | 部分完成 | 有 Vitest 单测与 fixtures；无 Playwright / Electron E2E |
 
-占位页（`PhasePage.vue`，不算已实现）：任务管理。
+当前导航页均已落地业务（无 `PhasePage` 占位）。导出尚未做入口。
 
 ## 已完成能力
 
@@ -108,6 +108,15 @@
 - IPC `live:*`；页面 `LiveMonitorView`；底栏显示 DAQ 状态
 - 单测：`tests/live/*.spec.ts`
 
+### Phase 9 任务系统
+
+- 状态机：`Pending → Running ⇄ Paused → Completed / Failed / Cancelled`，非法命令拒绝；失败 / 取消 / 完成后可 Retry
+- 协作式检查点：导入（读/解析/写入）、生成与滤波（按通道）、时域 / 频谱（按通道）
+- 主进程 `taskService`；IPC `task:list` / `task:get` / `task:command` / `task:clearFinished` / 事件 `task:updated`
+- 页面 `TaskManagerView`：进度、耗时、错误、暂停 / 继续 / 取消 / 重试；底栏显示运行中任务数
+- 会话内有效，不写磁盘；关闭工程会取消进行中的任务
+- 单测：`tests/tasks/*.spec.ts`
+
 ## 测试与验证
 
 已有单测：
@@ -127,6 +136,9 @@
 - `tests/live/packet.spec.ts`
 - `tests/live/buffer.spec.ts`
 - `tests/live/config.spec.ts`
+- `tests/tasks/stateMachine.spec.ts`
+- `tests/tasks/model.spec.ts`
+- `tests/tasks/gate.spec.ts`
 
 fixtures：`tests/fixtures/csv/*`、`tests/fixtures/json/normal.json`；示例数据：`samples/`（含 `perg-ioba-0001.csv`）。
 
@@ -141,7 +153,7 @@ npm run build
 
 ## 建议下一阶段
 
-按功能依赖，下一步做 **任务系统**（后台进度与取消）或 **数据导出**。不要把任务和导出绑在一次提交里。故障注入（丢包、乱序等）留给 testing-lab，不要在 V1.0 Clean 里故意加缺陷。
+按功能依赖，下一步做 **数据导出**（CSV / JSON，写入 `exports/`）。不要把导出和任务系统绑成一次提交。故障注入（丢包、乱序等）留给 testing-lab，不要在 V1.0 Clean 里故意加缺陷。
 
 ## 维护规则
 

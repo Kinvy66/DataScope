@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyFilterToDataset } from '@shared/filters/apply'
+import { applyFilterToDataset, applyFilterToDatasetAsync } from '@shared/filters/apply'
 import { DataScopeError } from '@shared/errors'
 import type { Dataset } from '@shared/types/dataset'
 import type { FilterRequest } from '@shared/types/filter'
@@ -83,5 +83,15 @@ describe('applyFilterToDataset', () => {
     expect(() =>
       applyFilterToDataset(dataset([[1, 2, 3, 4]]), { ...base, channelIds: ['missing'] })
     ).toThrow(/通道不存在/)
+  })
+
+  it('async per-channel path matches the sync result shape', async () => {
+    const source = dataset([[1, 2, 3, 4], [10, 10, 10, 10]])
+    const request = { ...base, channelIds: ['ch-1', 'ch-2'], kind: 'dc-remove' as const }
+    const sync = applyFilterToDataset(source, request)
+    const asyncResult = await applyFilterToDatasetAsync(source, request)
+    expect(asyncResult.samples[0]).toEqual(sync.samples[0])
+    expect(asyncResult.samples[1]).toEqual(sync.samples[1])
+    expect(asyncResult.name).toBe(sync.name)
   })
 })

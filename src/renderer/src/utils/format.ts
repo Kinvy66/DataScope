@@ -37,6 +37,12 @@ export function formatDuration(seconds: number): string {
   return `${minutes} min ${rest.toFixed(1)} s`
 }
 
+export function formatElapsedMs(ms: number): string {
+  if (!Number.isFinite(ms) || ms < 0) return '—'
+  if (ms < 1000) return `${Math.round(ms)} ms`
+  return formatDuration(ms / 1000)
+}
+
 export function formatTimestamp(value: number): string {
   return new Date(value).toLocaleString()
 }

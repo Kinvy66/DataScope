@@ -5,11 +5,28 @@ import { analyzeTimeDomain } from '@shared/analysis/timeDomain'
 import { DataScopeError } from '@shared/errors'
 import type { AnalysisRequest, AnalysisResult } from '@shared/types/analysis'
 import type { SpectrumRequest, SpectrumResult } from '@shared/types/spectrum'
+import type { TaskContext } from '@shared/types/task'
 import { datasetRegistry } from './datasetRegistry'
 import { logger } from './logger'
 import { projectService } from './project'
+import { taskService } from './tasks'
 
 export async function runTimeDomainAnalysis(request: AnalysisRequest): Promise<AnalysisResult> {
+  projectService.requireOpen()
+  if (!request?.datasetId) {
+    throw new DataScopeError('VALIDATION_ERROR', '缺少数据集 ID')
+  }
+  const dataset = datasetRegistry.get(request.datasetId)
+  return taskService.run<AnalysisResult>(`时域分析 · ${dataset.name}`, {
+    kind: 'analyze',
+    request
+  })
+}
+
+export async function runTimeDomainAnalysisWork(
+  request: AnalysisRequest,
+  ctx: TaskContext
+): Promise<AnalysisResult> {
   projectService.requireOpen()
   if (!request?.datasetId) {
     throw new DataScopeError('VALIDATION_ERROR', '缺少数据集 ID')
@@ -24,7 +41,29 @@ export async function runTimeDomainAnalysis(request: AnalysisRequest): Promise<A
     endIndex: request.endIndex
   })
 
-  const result = analyzeTimeDomain(dataset, request)
+  ctx.report(0.05, '准备时域统计')
+  const parts: AnalysisResult[] = []
+  const total = request.channelIds.length
+  for (let index = 0; index < total; index += 1) {
+    const channelId = request.channelIds[index]
+    if (!channelId) continue
+    await ctx.checkpoint()
+    ctx.report(0.08 + ((index + 1) / Math.max(total, 1)) * 0.72, `统计通道 ${index + 1}/${total}`)
+    parts.push(analyzeTimeDomain(dataset, { ...request, channelIds: [channelId] }))
+  }
+
+  const template = parts[0]
+  if (!template) {
+    throw new DataScopeError('VALIDATION_ERROR', '请至少选择一个通道进行分析')
+  }
+
+  const result: AnalysisResult = {
+    ...template,
+    channels: parts.flatMap((part) => part.channels)
+  }
+
+  await ctx.checkpoint()
+  ctx.report(0.88, '写入分析文件')
   result.outputPath = await saveAnalysisReport(
     result.datasetName,
     'time-domain',
@@ -38,11 +77,26 @@ export async function runTimeDomainAnalysis(request: AnalysisRequest): Promise<A
     outputPath: result.outputPath,
     channels: result.channels.length
   })
-
+  ctx.report(1, '完成')
   return result
 }
 
 export async function runSpectrumAnalysis(request: SpectrumRequest): Promise<SpectrumResult> {
+  projectService.requireOpen()
+  if (!request?.datasetId) {
+    throw new DataScopeError('VALIDATION_ERROR', '缺少数据集 ID')
+  }
+  const dataset = datasetRegistry.get(request.datasetId)
+  return taskService.run<SpectrumResult>(`频谱分析 · ${dataset.name}`, {
+    kind: 'spectrum',
+    request
+  })
+}
+
+export async function runSpectrumAnalysisWork(
+  request: SpectrumRequest,
+  ctx: TaskContext
+): Promise<SpectrumResult> {
   projectService.requireOpen()
   if (!request?.datasetId) {
     throw new DataScopeError('VALIDATION_ERROR', '缺少数据集 ID')
@@ -57,7 +111,29 @@ export async function runSpectrumAnalysis(request: SpectrumRequest): Promise<Spe
     window: request.window
   })
 
-  const result = analyzeSpectrum(dataset, request)
+  ctx.report(0.05, '准备频谱计算')
+  const parts: SpectrumResult[] = []
+  const total = request.channelIds.length
+  for (let index = 0; index < total; index += 1) {
+    const channelId = request.channelIds[index]
+    if (!channelId) continue
+    await ctx.checkpoint()
+    ctx.report(0.08 + ((index + 1) / Math.max(total, 1)) * 0.72, `FFT 通道 ${index + 1}/${total}`)
+    parts.push(analyzeSpectrum(dataset, { ...request, channelIds: [channelId] }))
+  }
+
+  const template = parts[0]
+  if (!template) {
+    throw new DataScopeError('VALIDATION_ERROR', '请至少选择一个通道进行频谱分析')
+  }
+
+  const result: SpectrumResult = {
+    ...template,
+    channels: parts.flatMap((part) => part.channels)
+  }
+
+  await ctx.checkpoint()
+  ctx.report(0.88, '写入分析文件')
   result.outputPath = await saveAnalysisReport(
     result.datasetName,
     'spectrum',
@@ -71,7 +147,7 @@ export async function runSpectrumAnalysis(request: SpectrumRequest): Promise<Spe
     outputPath: result.outputPath,
     peakFrequency: result.channels[0]?.peakFrequency ?? 0
   })
-
+  ctx.report(1, '完成')
   return result
 }
 

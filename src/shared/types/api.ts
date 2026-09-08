@@ -24,6 +24,7 @@ import type {
   ViewportData,
   ViewportRequest
 } from './dataset'
+import type { TaskCommand, TaskRecord } from './task'
 
 export interface OpenFileFilter {
   name: string
@@ -84,6 +85,13 @@ export interface DataScopeAPI {
     getViewport: (request: LiveViewportRequest) => Promise<ViewportData>
     capture: (name: string) => Promise<DatasetInfo>
     onStatus: (handler: (status: LiveStatus) => void) => () => void
+  }
+  task: {
+    list: () => Promise<TaskRecord[]>
+    get: (taskId: string) => Promise<TaskRecord>
+    command: (taskId: string, command: TaskCommand) => Promise<TaskRecord>
+    clearFinished: () => Promise<TaskRecord[]>
+    onUpdated: (handler: (task: TaskRecord) => void) => () => void
   }
 }
 

@@ -44,7 +44,13 @@ export const IpcChannel = {
   LiveCommand: 'live:command',
   LiveGetViewport: 'live:getViewport',
   LiveCapture: 'live:capture',
-  LiveStatusChanged: 'live:statusChanged'
+  LiveStatusChanged: 'live:statusChanged',
+
+  TaskList: 'task:list',
+  TaskGet: 'task:get',
+  TaskCommand: 'task:command',
+  TaskClearFinished: 'task:clearFinished',
+  TaskUpdated: 'task:updated'
 } as const
 
 export type IpcChannelName = (typeof IpcChannel)[keyof typeof IpcChannel]

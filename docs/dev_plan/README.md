@@ -18,7 +18,7 @@
 | 7 | [Phase 7 Marker 管理](./Phase%207%20Marker%20管理%20Prompt.md) | 已完成 | Marker CRUD 与波形联动 |
 | 8A | [Phase 8A 数据发生器](./Phase%208A%20数据发生器%20Prompt.md) | 已完成 | 离线合成波形写入工程 |
 | 8B | [Phase 8B 实时监视](./Phase%208B%20实时监视%20Prompt.md) | 已完成 | Virtual DAQ、Live Monitor |
-| 9 | [Phase 9 任务系统](./Phase%209%20任务系统%20Prompt.md) | 未开始 | 后台任务进度与取消 |
+| 9 | [Phase 9 任务系统](./Phase%209%20任务系统%20Prompt.md) | 已完成 | 后台任务进度与取消 |
 | 10 | [Phase 10 数据导出](./Phase%2010%20数据导出%20Prompt.md) | 未开始 | CSV / JSON / 二进制导出 |
 | 11 | [Phase 11 设置与国际化](./Phase%2011%20设置与国际化%20Prompt.md) | 部分完成 | 主题可用；缺 i18n |
 | 12 | [Phase 12 测试支持](./Phase%2012%20测试支持%20Prompt.md) | 部分完成 | Vitest 有；缺 E2E |

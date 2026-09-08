@@ -10,6 +10,7 @@ import type { SpectrumRequest } from '@shared/types/spectrum'
 import type { GeneratorRequest } from '@shared/types/generator'
 import type { MarkerDraft, SourceFormat, ViewportRequest } from '@shared/types/dataset'
 import type { DaqCommand, LiveConfig, LiveStatus, LiveViewportRequest } from '@shared/types/live'
+import type { TaskCommand, TaskRecord } from '@shared/types/task'
 
 const api: DataScopeAPI = {
   app: {
@@ -81,6 +82,18 @@ const api: DataScopeAPI = {
       const listener = (_event: unknown, status: LiveStatus): void => handler(status)
       ipcRenderer.on(IpcChannel.LiveStatusChanged, listener)
       return () => ipcRenderer.removeListener(IpcChannel.LiveStatusChanged, listener)
+    }
+  },
+  task: {
+    list: () => ipcRenderer.invoke(IpcChannel.TaskList),
+    get: (taskId: string) => ipcRenderer.invoke(IpcChannel.TaskGet, taskId),
+    command: (taskId: string, command: TaskCommand) =>
+      ipcRenderer.invoke(IpcChannel.TaskCommand, taskId, command),
+    clearFinished: () => ipcRenderer.invoke(IpcChannel.TaskClearFinished),
+    onUpdated: (handler) => {
+      const listener = (_event: unknown, task: TaskRecord): void => handler(task)
+      ipcRenderer.on(IpcChannel.TaskUpdated, listener)
+      return () => ipcRenderer.removeListener(IpcChannel.TaskUpdated, listener)
     }
   }
 }
