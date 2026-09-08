@@ -77,6 +77,10 @@ const datasetStore = useDatasetStore()
             <AppIcon name="listTodo" />
             任务管理
           </button>
+          <button class="btn" type="button" :disabled="!datasetStore.selected" @click="router.push('/export')">
+            <AppIcon name="upload" />
+            数据导出
+          </button>
         </div>
       </article>
     </div>

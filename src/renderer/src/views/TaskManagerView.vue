@@ -76,7 +76,7 @@ const statusOptions: TaskStatus[] = [...TASK_STATUSES]
       <div class="kicker">Task Manager</div>
       <h1>任务管理</h1>
       <p>
-        导入、生成、滤波、时域分析和频谱分析会进入后台任务。可在检查点暂停、继续、取消或失败后重试。进度按通道或读写步骤协作更新。
+        导入、生成、滤波、时域分析、频谱分析和导出会进入后台任务。可在检查点暂停、继续、取消或失败后重试。进度按通道或读写步骤协作更新。
       </p>
     </header>
 
@@ -155,7 +155,7 @@ const statusOptions: TaskStatus[] = [...TASK_STATUSES]
         </tbody>
       </table>
       <p v-else class="muted empty">
-        {{ statusFilter ? '没有符合筛选条件的任务。' : '还没有任务。导入、生成、滤波或分析后会显示在这里。' }}
+        {{ statusFilter ? '没有符合筛选条件的任务。' : '还没有任务。导入、生成、滤波、分析或导出后会显示在这里。' }}
       </p>
     </div>
   </section>

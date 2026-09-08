@@ -14,6 +14,7 @@ const items: { path: string; label: string; hint: string; icon: IconName }[] = [
   { path: '/spectrum', label: '频谱分析', hint: 'Spectrum', icon: 'chartBar' },
   { path: '/markers', label: 'Marker 管理', hint: 'Markers', icon: 'pin' },
   { path: '/generator', label: '数据发生器', hint: 'Generator', icon: 'zap' },
+  { path: '/export', label: '数据导出', hint: 'Export', icon: 'upload' },
   { path: '/tasks', label: '任务管理', hint: 'Tasks', icon: 'listTodo' },
   { path: '/logs', label: '日志查看', hint: 'Logs', icon: 'fileText' },
   { path: '/project-settings', label: '工程设置', hint: 'Project', icon: 'folder' },

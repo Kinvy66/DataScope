@@ -149,6 +149,10 @@ async function confirmDelete(): Promise<void> {
                 <AppIcon name="trash" />
                 删除
               </button>
+              <button class="btn" type="button" @click="router.push('/export')">
+                <AppIcon name="upload" />
+                导出
+              </button>
             </template>
           </div>
         </article>

@@ -6,6 +6,7 @@ import {
   importDatasetWork
 } from './importer'
 import { runSpectrumAnalysisWork, runTimeDomainAnalysisWork } from './analysis'
+import { exportDatasetWork } from './exporter'
 import { taskService } from './tasks'
 
 export function registerTaskWorkers(): void {
@@ -38,5 +39,11 @@ export function registerTaskWorkers(): void {
       throw new DataScopeError('VALIDATION_ERROR', '任务载荷类型不匹配')
     }
     return runSpectrumAnalysisWork(payload.request, ctx)
+  })
+  taskService.registerWorker('export', async (payload: TaskPayload, ctx) => {
+    if (payload.kind !== 'export') {
+      throw new DataScopeError('VALIDATION_ERROR', '任务载荷类型不匹配')
+    }
+    return exportDatasetWork(payload.request, ctx)
   })
 }

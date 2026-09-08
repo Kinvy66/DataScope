@@ -190,6 +190,10 @@ class ProjectService {
     return join(this.requireOpen().rootPath, 'data')
   }
 
+  exportsDirectory(): string {
+    return join(this.requireOpen().rootPath, 'exports')
+  }
+
   replaceFile(file: ProjectFile): void {
     if (!this.current) return
     this.current.file = file

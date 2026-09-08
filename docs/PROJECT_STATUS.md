@@ -8,8 +8,8 @@
 | 分支 | `master` |
 | 进度基准 | 以本文件所在 commit 为准 |
 | 产品阶段 | V1.0 Clean（禁止故意注入缺陷） |
-| 已完成 | Phase 1–9 + 5B：框架、工程、导入、波形、时域分析、数字滤波、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视、任务系统 |
-| 建议下一阶段 | 数据导出（10） |
+| 已完成 | Phase 1–10 + 5B：框架、工程、导入、波形、时域分析、数字滤波、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视、任务系统、数据导出 |
+| 建议下一阶段 | 设置系统完善（11）或 E2E 测试（12） |
 
 使用手册：[`docs/wiki/README.md`](./wiki/README.md)  
 开发任务书：[`docs/dev_plan/README.md`](./dev_plan/README.md)
@@ -28,12 +28,12 @@
 | 7 | Marker | 已完成 | 添加 / 编辑 / 删除，写入 `project.json`，与波形跳转联动 |
 | 8A | 数据发生器 | 已完成 | 离线合成波形并写入工程 JSON |
 | 8B | 实时数据 / Virtual DAQ | 已完成 | 状态机、进程内组包校验、环形缓冲、Live 波形、停止后写入工程 |
-| 9 | 任务系统 | 已完成 | 导入 / 生成 / 滤波 / 时域 / 频谱进入任务列表；暂停、继续、取消、重试 |
-| 10 | 数据导出 | 未开始 | 工程目录有 `exports/`，无导出流程 |
+| 9 | 任务系统 | 已完成 | 导入 / 生成 / 滤波 / 时域 / 频谱 / 导出进入任务列表；暂停、继续、取消、重试 |
+| 10 | 数据导出 | 已完成 | CSV / TXT / JSON 写入 `exports/`，走任务系统；无私有二进制 |
 | 11 | 设置系统 | 部分完成 | 主题与日志级别可用；无完整 i18n |
 | 12 | 测试支持 / E2E | 部分完成 | 有 Vitest 单测与 fixtures；无 Playwright / Electron E2E |
 
-当前导航页均已落地业务（无 `PhasePage` 占位）。导出尚未做入口。
+当前导航页均已落地业务。DataScope 私有二进制导出尚未做。
 
 ## 已完成能力
 
@@ -117,6 +117,15 @@
 - 会话内有效，不写磁盘；关闭工程会取消进行中的任务
 - 单测：`tests/tasks/*.spec.ts`
 
+### Phase 10 数据导出
+
+- 格式：CSV（逗号）、TXT（制表符）、JSON（行主序 `[timestamp, ch…]`），可再导入
+- 可选通道与采样区间；写入工程 `exports/`，重名自动加序号
+- 走 `taskService`（`kind: export`），协作检查点与临时文件，取消时删除 `.tmp`
+- 磁盘满 / 权限 / 路径错误映射为 `FILE_DISK_FULL` / `FILE_PERMISSION` / `FILE_NOT_FOUND`
+- 页面 `ExportView`；数据浏览与工作台可进入
+- 单测：`tests/exporters/serialize.spec.ts`（含 CSV/TXT/JSON 往返解析）
+
 ## 测试与验证
 
 已有单测：
@@ -139,6 +148,7 @@
 - `tests/tasks/stateMachine.spec.ts`
 - `tests/tasks/model.spec.ts`
 - `tests/tasks/gate.spec.ts`
+- `tests/exporters/serialize.spec.ts`
 
 fixtures：`tests/fixtures/csv/*`、`tests/fixtures/json/normal.json`；示例数据：`samples/`（含 `perg-ioba-0001.csv`）。
 
@@ -153,7 +163,7 @@ npm run build
 
 ## 建议下一阶段
 
-按功能依赖，下一步做 **数据导出**（CSV / JSON，写入 `exports/`）。不要把导出和任务系统绑成一次提交。故障注入（丢包、乱序等）留给 testing-lab，不要在 V1.0 Clean 里故意加缺陷。
+按功能依赖，下一步做 **设置系统完善**（i18n 等）或 **E2E 测试资产**。不要把 i18n 和 Playwright 绑在一次提交里。故障注入留给 testing-lab。
 
 ## 维护规则
 

@@ -26,6 +26,7 @@ const router = createRouter({
       name: 'data-generator',
       component: () => import('../views/DataGeneratorView.vue')
     },
+    { path: '/export', name: 'data-export', component: () => import('../views/ExportView.vue') },
     { path: '/tasks', name: 'task-manager', component: () => import('../views/TaskManagerView.vue') },
     { path: '/logs', name: 'log-viewer', component: () => import('../views/LogViewerView.vue') },
     {

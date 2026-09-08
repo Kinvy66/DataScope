@@ -8,6 +8,7 @@ import type { LogQuery, LogWritePayload } from '@shared/types/log'
 import type { CreateProjectInput, UpdateProjectInput } from '@shared/types/project'
 import type { AnalysisRequest } from '@shared/types/analysis'
 import type { FilterRequest } from '@shared/types/filter'
+import type { ExportRequest } from '@shared/types/export'
 import type { SpectrumRequest } from '@shared/types/spectrum'
 import type { GeneratorRequest } from '@shared/types/generator'
 import type { MarkerDraft, SourceFormat, ViewportRequest } from '@shared/types/dataset'
@@ -31,6 +32,7 @@ import {
   removeMarker
 } from '../services/importer'
 import { liveService } from '../services/live'
+import { exportDataset } from '../services/exporter'
 import { registerTaskWorkers } from '../services/taskJobs'
 import { taskService } from '../services/tasks'
 
@@ -210,6 +212,10 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.DatasetFilter, async (_event, request: FilterRequest) => {
     return wrap(() => filterDataset(request))
+  })
+
+  ipcMain.handle(IpcChannel.DatasetExport, async (_event, request: ExportRequest) => {
+    return wrap(() => exportDataset(request))
   })
 
   ipcMain.handle(IpcChannel.DatasetAddMarker, async (_event, datasetId: string, draft: MarkerDraft) => {

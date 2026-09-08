@@ -2,6 +2,7 @@ export type ErrorCode =
   | 'FILE_NOT_FOUND'
   | 'FILE_EMPTY'
   | 'FILE_PERMISSION'
+  | 'FILE_DISK_FULL'
   | 'HEADER_MISSING'
   | 'COLUMN_MISMATCH'
   | 'NON_NUMERIC'

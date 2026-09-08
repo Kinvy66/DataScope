@@ -39,6 +39,7 @@ export type IconName =
   | 'check'
   | 'checkSquare'
   | 'eraser'
+  | 'upload'
   | 'arrowUp'
   | 'arrowDown'
   | 'filter'
@@ -139,6 +140,11 @@ export const iconGraphics: Record<IconName, IconNode[]> = {
     { t: 'path', d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' },
     { t: 'polyline', points: '7 10 12 15 17 10' },
     { t: 'line', x1: 12, y1: 15, x2: 12, y2: 3 }
+  ],
+  upload: [
+    { t: 'path', d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' },
+    { t: 'polyline', points: '17 8 12 3 7 8' },
+    { t: 'line', x1: 12, y1: 3, x2: 12, y2: 15 }
   ],
   sun: [
     { t: 'circle', cx: 12, cy: 12, r: 4 },

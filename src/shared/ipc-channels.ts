@@ -38,6 +38,7 @@ export const IpcChannel = {
   DatasetAddMarker: 'dataset:addMarker',
   DatasetUpdateMarker: 'dataset:updateMarker',
   DatasetRemoveMarker: 'dataset:removeMarker',
+  DatasetExport: 'dataset:export',
 
   LiveGetStatus: 'live:getStatus',
   LiveConfigure: 'live:configure',

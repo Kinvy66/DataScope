@@ -8,6 +8,7 @@ import type {
 } from './project'
 import type { AnalysisRequest, AnalysisResult } from './analysis'
 import type { FilterRequest } from './filter'
+import type { ExportRequest, ExportResult } from './export'
 import type { SpectrumRequest, SpectrumResult } from './spectrum'
 import type { GeneratorRequest } from './generator'
 import type {
@@ -77,6 +78,7 @@ export interface DataScopeAPI {
     addMarker: (datasetId: string, draft: MarkerDraft) => Promise<DatasetInfo>
     updateMarker: (datasetId: string, markerId: string, draft: MarkerDraft) => Promise<DatasetInfo>
     removeMarker: (datasetId: string, markerId: string) => Promise<DatasetInfo>
+    export: (request: ExportRequest) => Promise<ExportResult>
   }
   live: {
     getStatus: () => Promise<LiveStatus>

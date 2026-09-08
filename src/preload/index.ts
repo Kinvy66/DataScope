@@ -6,6 +6,7 @@ import type { LogQuery, LogWritePayload } from '@shared/types/log'
 import type { CreateProjectInput, UpdateProjectInput } from '@shared/types/project'
 import type { AnalysisRequest } from '@shared/types/analysis'
 import type { FilterRequest } from '@shared/types/filter'
+import type { ExportRequest } from '@shared/types/export'
 import type { SpectrumRequest } from '@shared/types/spectrum'
 import type { GeneratorRequest } from '@shared/types/generator'
 import type { MarkerDraft, SourceFormat, ViewportRequest } from '@shared/types/dataset'
@@ -69,7 +70,8 @@ const api: DataScopeAPI = {
     updateMarker: (datasetId: string, markerId: string, draft: MarkerDraft) =>
       ipcRenderer.invoke(IpcChannel.DatasetUpdateMarker, datasetId, markerId, draft),
     removeMarker: (datasetId: string, markerId: string) =>
-      ipcRenderer.invoke(IpcChannel.DatasetRemoveMarker, datasetId, markerId)
+      ipcRenderer.invoke(IpcChannel.DatasetRemoveMarker, datasetId, markerId),
+    export: (request: ExportRequest) => ipcRenderer.invoke(IpcChannel.DatasetExport, request)
   },
   live: {
     getStatus: () => ipcRenderer.invoke(IpcChannel.LiveGetStatus),

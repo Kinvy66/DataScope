@@ -1,5 +1,6 @@
 import type { AnalysisRequest } from './analysis'
 import type { SourceFormat } from './dataset'
+import type { ExportRequest } from './export'
 import type { FilterRequest } from './filter'
 import type { GeneratorRequest } from './generator'
 import type { SpectrumRequest } from './spectrum'
@@ -15,7 +16,7 @@ export const TASK_STATUSES = [
 
 export type TaskStatus = (typeof TASK_STATUSES)[number]
 
-export const TASK_KINDS = ['import', 'generate', 'filter', 'analyze', 'spectrum'] as const
+export const TASK_KINDS = ['import', 'generate', 'filter', 'analyze', 'spectrum', 'export'] as const
 export type TaskKind = (typeof TASK_KINDS)[number]
 
 export const TASK_COMMANDS = ['pause', 'resume', 'cancel', 'retry'] as const
@@ -35,7 +36,8 @@ export const TASK_KIND_LABELS: Record<TaskKind, string> = {
   generate: '生成',
   filter: '滤波',
   analyze: '时域分析',
-  spectrum: '频谱分析'
+  spectrum: '频谱分析',
+  export: '导出'
 }
 
 export const TASK_COMMAND_LABELS: Record<TaskCommand, string> = {
@@ -51,6 +53,7 @@ export type TaskPayload =
   | { kind: 'filter'; request: FilterRequest }
   | { kind: 'analyze'; request: AnalysisRequest }
   | { kind: 'spectrum'; request: SpectrumRequest }
+  | { kind: 'export'; request: ExportRequest }
 
 export interface TaskContext {
   readonly id: string
