@@ -33,6 +33,7 @@ export const IpcChannel = {
   DatasetRemove: 'dataset:remove',
   DatasetAnalyze: 'dataset:analyze',
   DatasetAnalyzeSpectrum: 'dataset:analyzeSpectrum',
+  DatasetFilter: 'dataset:filter',
   DatasetGenerate: 'dataset:generate',
   DatasetAddMarker: 'dataset:addMarker',
   DatasetUpdateMarker: 'dataset:updateMarker',

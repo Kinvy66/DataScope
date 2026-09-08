@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { elapsedSeconds } from '@shared/markers/manage'
 import { useAnalysisStore } from '../stores/analysis'
 import { useDatasetStore } from '../stores/dataset'
+import { useFilterStore } from '../stores/filter'
 import { useProjectStore } from '../stores/project'
-import { elapsedSeconds } from '@shared/markers/manage'
 import { formatDuration, formatNumber, formatPath, formatTimestamp } from '../utils/format'
 
 const router = useRouter()
 const projectStore = useProjectStore()
 const datasetStore = useDatasetStore()
 const analysisStore = useAnalysisStore()
+const filterStore = useFilterStore()
 
 const dataset = computed(() => datasetStore.selected)
 
@@ -33,7 +35,9 @@ const windowLabel = computed(() => {
     <header class="page-header">
       <div class="kicker">Signal Analysis</div>
       <h1>信号分析</h1>
-      <p>对选定通道和采样区间计算 Min / Max / Mean / Median / RMS / StdDev / Peak-Peak。</p>
+      <p>
+        对选定通道计算时域统计，或应用去直流 / 低通 / 高通 / 带通 / 陷波，滤波结果保存为新的数据集。
+      </p>
     </header>
 
     <div v-if="!projectStore.hasProject" class="panel empty-state">
@@ -104,6 +108,59 @@ const windowLabel = computed(() => {
               {{ analysisStore.busy ? '分析中…' : '运行分析' }}
             </button>
           </div>
+
+          <h2 class="section">数字滤波</h2>
+          <div class="field">
+            <label for="filter-kind">类型</label>
+            <select id="filter-kind" v-model="filterStore.kind">
+              <option value="dc-remove">去直流</option>
+              <option value="lowpass">低通</option>
+              <option value="highpass">高通</option>
+              <option value="bandpass">带通</option>
+              <option value="notch">陷波</option>
+            </select>
+          </div>
+          <div v-if="filterStore.needsCutoff" class="field">
+            <label for="filter-cutoff">截止频率 (Hz)</label>
+            <input id="filter-cutoff" v-model.number="filterStore.cutoffHz" type="number" min="0.0001" step="any" />
+          </div>
+          <template v-if="filterStore.needsBand">
+            <div class="field">
+              <label for="filter-low">下限频率 (Hz)</label>
+              <input id="filter-low" v-model.number="filterStore.lowHz" type="number" min="0.0001" step="any" />
+            </div>
+            <div class="field">
+              <label for="filter-high">上限频率 (Hz)</label>
+              <input id="filter-high" v-model.number="filterStore.highHz" type="number" min="0.0001" step="any" />
+            </div>
+          </template>
+          <template v-if="filterStore.needsNotch">
+            <div class="field">
+              <label for="filter-freq">陷波频率 (Hz)</label>
+              <input id="filter-freq" v-model.number="filterStore.frequencyHz" type="number" min="0.0001" step="any" />
+            </div>
+            <div class="field">
+              <label for="filter-q">品质因数 Q</label>
+              <input id="filter-q" v-model.number="filterStore.q" type="number" min="0.1" max="200" step="any" />
+            </div>
+          </template>
+          <p class="muted">
+            {{ filterStore.label }}
+            <span v-if="filterStore.nyquist > 0">
+              · 奈奎斯特 {{ formatNumber(filterStore.nyquist, 3) }} Hz
+            </span>
+          </p>
+          <p class="muted">二阶 Butterworth（陷波为 IIR notch）。未勾选的通道原样复制。结果写入工程 data 目录。</p>
+          <div class="row">
+            <button
+              class="btn btn-primary"
+              type="button"
+              :disabled="!filterStore.canApply"
+              @click="filterStore.apply()"
+            >
+              {{ filterStore.busy ? '滤波中…' : '应用滤波并保存' }}
+            </button>
+          </div>
         </aside>
 
         <article class="panel results">
@@ -147,6 +204,19 @@ const windowLabel = computed(() => {
             </p>
           </template>
           <p v-else class="muted">选择通道和区间后点击“运行分析”。结果会保存到工程的 analysis 目录。</p>
+
+          <template v-if="filterStore.result">
+            <h2 class="section">滤波结果</h2>
+            <p>
+              已生成数据集 <strong>{{ filterStore.result.name }}</strong>
+              · {{ filterStore.result.channelCount }} ch ·
+              {{ filterStore.result.sampleCount.toLocaleString() }} samples
+            </p>
+            <div class="row">
+              <button class="btn" type="button" @click="router.push('/data')">打开数据浏览</button>
+              <button class="btn" type="button" @click="router.push('/spectrum')">去频谱验证</button>
+            </div>
+          </template>
         </article>
       </div>
     </template>
@@ -156,7 +226,7 @@ const windowLabel = computed(() => {
 <style scoped>
 .layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 300px 1fr;
   gap: 12px;
   min-height: 0;
   flex: 1;
@@ -171,6 +241,13 @@ const windowLabel = computed(() => {
 h2 {
   margin: 0 0 8px;
   font-size: 16px;
+}
+
+.section {
+  margin: 20px 0 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
 }
 
 .channels {

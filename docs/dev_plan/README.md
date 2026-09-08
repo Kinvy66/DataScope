@@ -13,6 +13,7 @@
 | 3 | [Phase 3 数据导入](./Phase%203%20数据导入%20Prompt.md) | 已完成 | CSV / TXT / JSON、数据浏览 |
 | 4 | [Phase 4 波形可视化](./Phase%204%20波形可视化%20Prompt.md) | 已完成 | Canvas 波形、降采样、光标 |
 | 5 | [Phase 5 时域信号分析](./Phase%205%20时域信号分析%20Prompt.md) | 已完成 | 统计量、analysis JSON |
+| 5B | （无独立任务书，见 PRD §5.4） | 已完成 | 去直流 / 低通 / 高通 / 带通 / 陷波 |
 | 6 | [Phase 6 频谱分析](./Phase%206%20频谱分析%20Prompt.md) | 已完成 | FFT、幅度/功率谱 |
 | 7 | [Phase 7 Marker 管理](./Phase%207%20Marker%20管理%20Prompt.md) | 已完成 | Marker CRUD 与波形联动 |
 | 8A | [Phase 8A 数据发生器](./Phase%208A%20数据发生器%20Prompt.md) | 已完成 | 离线合成波形写入工程 |

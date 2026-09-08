@@ -7,6 +7,7 @@ import type {
   UpdateProjectInput
 } from './project'
 import type { AnalysisRequest, AnalysisResult } from './analysis'
+import type { FilterRequest } from './filter'
 import type { SpectrumRequest, SpectrumResult } from './spectrum'
 import type { GeneratorRequest } from './generator'
 import type {
@@ -70,6 +71,7 @@ export interface DataScopeAPI {
     remove: (datasetId: string) => Promise<void>
     analyze: (request: AnalysisRequest) => Promise<AnalysisResult>
     analyzeSpectrum: (request: SpectrumRequest) => Promise<SpectrumResult>
+    filter: (request: FilterRequest) => Promise<DatasetInfo>
     generate: (request: GeneratorRequest) => Promise<DatasetInfo>
     addMarker: (datasetId: string, draft: MarkerDraft) => Promise<DatasetInfo>
     updateMarker: (datasetId: string, markerId: string, draft: MarkerDraft) => Promise<DatasetInfo>

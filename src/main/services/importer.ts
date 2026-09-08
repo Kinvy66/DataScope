@@ -16,8 +16,11 @@ import {
   updateMarker as applyMarkerDraft
 } from '@shared/markers/manage'
 import { validateDataset } from '@shared/parsers/dataset'
+import { applyFilterToDataset } from '@shared/filters/apply'
+import { describeFilter } from '@shared/algorithms/filter'
 import { generateDatasetFromRequest, serializeGeneratedJson } from '@shared/generators/waveform'
 import type { Dataset, DatasetInfo, Marker, MarkerDraft, SourceFormat } from '@shared/types/dataset'
+import type { FilterRequest } from '@shared/types/filter'
 import type { GeneratorRequest } from '@shared/types/generator'
 import type { DataFileRef } from '@shared/types/project'
 import { logger } from './logger'
@@ -95,6 +98,32 @@ export async function generateDataset(request: GeneratorRequest): Promise<Datase
     kind: request.kind,
     channels: dataset.channelCount,
     samples: dataset.sampleCount
+  })
+  return info
+}
+
+export async function filterDataset(request: FilterRequest): Promise<DatasetInfo> {
+  projectService.requireOpen()
+  if (!request?.datasetId) {
+    throw new DataScopeError('VALIDATION_ERROR', '缺少数据集 ID')
+  }
+
+  const source = datasetRegistry.get(request.datasetId)
+  await logger.write('INFO', 'Filter Start', 'main', {
+    dataset: source.name,
+    kind: request.kind,
+    channels: request.channelIds.length
+  })
+
+  const dataset = applyFilterToDataset(source, request)
+  const info = await saveDatasetToProject(dataset)
+
+  await logger.write('INFO', 'Filter Complete', 'main', {
+    source: source.name,
+    name: dataset.name,
+    kind: request.kind,
+    label: describeFilter(request),
+    channels: request.channelIds.length
   })
   return info
 }

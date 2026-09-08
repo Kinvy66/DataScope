@@ -8,8 +8,8 @@
 | 分支 | `master` |
 | 进度基准 | 以本文件所在 commit 为准 |
 | 产品阶段 | V1.0 Clean（禁止故意注入缺陷） |
-| 已完成 | Phase 1–8B：框架、工程、导入、波形、时域分析、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视 |
-| 建议下一阶段 | 数字滤波，或任务系统（9） / 数据导出（10） |
+| 已完成 | Phase 1–8B + 5B：框架、工程、导入、波形、时域分析、数字滤波、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视 |
+| 建议下一阶段 | 任务系统（9）或数据导出（10） |
 
 使用手册：[`docs/wiki/README.md`](./wiki/README.md)  
 开发任务书：[`docs/dev_plan/README.md`](./dev_plan/README.md)
@@ -23,6 +23,7 @@
 | 3 | 数据导入 | 已完成 | CSV / TXT / JSON 解析（含日期时间戳）、工程 `data/` 落地、数据集注册 |
 | 4 | 波形可视化 | 已完成 | Canvas 多通道波形、viewport 降采样、光标、缩放平移、Marker 叠加 |
 | 5 | 时域信号分析 | 已完成 | 通道/区间统计，结果写入 `analysis/*.json` |
+| 5B | 数字滤波 | 已完成 | 去直流 / 低通 / 高通 / 带通 / 陷波，结果写入新数据集 |
 | 6 | 频谱分析 | 已完成 | Radix-2 FFT、窗函数、幅度/功率谱、峰值频率、Canvas 频谱图 |
 | 7 | Marker | 已完成 | 添加 / 编辑 / 删除，写入 `project.json`，与波形跳转联动 |
 | 8A | 数据发生器 | 已完成 | 离线合成波形并写入工程 JSON |
@@ -33,8 +34,6 @@
 | 12 | 测试支持 / E2E | 部分完成 | 有 Vitest 单测与 fixtures；无 Playwright / Electron E2E |
 
 占位页（`PhasePage.vue`，不算已实现）：任务管理。
-
-信号处理中的 **数字滤波** 尚未开始，不要与已完成的 FFT 频谱混为一谈。
 
 ## 已完成能力
 
@@ -74,6 +73,13 @@
 - 指标：Min / Max / Mean / Median / RMS / StdDev / Peak-Peak
 - 主进程 `dataset:analyze` → `analyzeTimeDomain` → `analysis/*.json`
 
+### Phase 5B 数字滤波
+
+- 算法：`src/shared/algorithms/filter.ts`（去直流；二阶 Butterworth 低/高/带通；IIR 陷波）
+- 业务：`applyFilterToDataset`；IPC `dataset:filter`；结果写入 `data/*.json` 并进入 Dataset 列表
+- 页面：信号分析页的滤波区 + `useFilterStore`
+- 单测：`tests/algorithms/filter.spec.ts`、`tests/filters/apply.spec.ts`
+
 ### Phase 6 频谱分析
 
 - 算法：`src/shared/algorithms/fft.ts`
@@ -112,12 +118,14 @@
 - `tests/algorithms/fft.spec.ts`
 - `tests/analysis/timeDomain.spec.ts`
 - `tests/analysis/spectrum.spec.ts`
+- `tests/algorithms/filter.spec.ts`
+- `tests/filters/apply.spec.ts`
 - `tests/generators/waveform.spec.ts`
 - `tests/markers/manage.spec.ts`
 - `tests/live/stateMachine.spec.ts`
 - `tests/live/packet.spec.ts`
 - `tests/live/buffer.spec.ts`
-- `tests/live/config.spec.ts
+- `tests/live/config.spec.ts`
 
 fixtures：`tests/fixtures/csv/*`、`tests/fixtures/json/normal.json`；示例数据：`samples/`（含 `perg-ioba-0001.csv`）。
 
@@ -132,7 +140,7 @@ npm run build
 
 ## 建议下一阶段
 
-**数字滤波**（高通 / 低通 / 带通 / 陷波）补齐信号分析；或按依赖链做 **任务系统 / 数据导出**。不要把滤波和导出混在一次提交里。故障注入（丢包、乱序等）留给 testing-lab，不要在 V1.0 Clean 里故意加缺陷。
+按功能依赖，下一步做 **任务系统**（后台进度与取消）或 **数据导出**。不要把任务和导出绑在一次提交里。故障注入（丢包、乱序等）留给 testing-lab，不要在 V1.0 Clean 里故意加缺陷。
 
 ## 维护规则
 
