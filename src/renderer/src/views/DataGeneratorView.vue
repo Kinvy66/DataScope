@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import AppIcon from '../components/common/AppIcon.vue'
 import { useGeneratorStore } from '../stores/generator'
 import { useProjectStore } from '../stores/project'
 import { formatNumber } from '../utils/format'
@@ -83,9 +84,13 @@ const generatorStore = useGeneratorStore()
         </p>
         <div class="row">
           <button class="btn btn-primary" type="submit" :disabled="generatorStore.busy">
+            <AppIcon name="zap" />
             {{ generatorStore.busy ? '生成中…' : '生成并加入工程' }}
           </button>
-          <button class="btn" type="button" @click="router.push('/data')">查看数据浏览</button>
+          <button class="btn" type="button" @click="router.push('/data')">
+            <AppIcon name="database" />
+            查看数据浏览
+          </button>
         </div>
       </aside>
 
@@ -125,6 +130,7 @@ const generatorStore = useGeneratorStore()
 
 .row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 12px;
 }

@@ -1,21 +1,23 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
+import AppIcon from '../common/AppIcon.vue'
+import type { IconName } from '../common/icons'
 
 const route = useRoute()
 const router = useRouter()
 
-const items = [
-  { path: '/', label: '工作台', hint: 'Dashboard' },
-  { path: '/data', label: '数据浏览', hint: 'Data Browser' },
-  { path: '/live', label: '实时监视', hint: 'Live Monitor' },
-  { path: '/signal', label: '信号分析', hint: 'Signal Analysis' },
-  { path: '/spectrum', label: '频谱分析', hint: 'Spectrum' },
-  { path: '/markers', label: 'Marker 管理', hint: 'Markers' },
-  { path: '/generator', label: '数据发生器', hint: 'Generator' },
-  { path: '/tasks', label: '任务管理', hint: 'Tasks' },
-  { path: '/logs', label: '日志查看', hint: 'Logs' },
-  { path: '/project-settings', label: '工程设置', hint: 'Project' },
-  { path: '/app-settings', label: '应用设置', hint: 'Application' }
+const items: { path: string; label: string; hint: string; icon: IconName }[] = [
+  { path: '/', label: '工作台', hint: 'Dashboard', icon: 'home' },
+  { path: '/data', label: '数据浏览', hint: 'Data Browser', icon: 'database' },
+  { path: '/live', label: '实时监视', hint: 'Live Monitor', icon: 'activity' },
+  { path: '/signal', label: '信号分析', hint: 'Signal Analysis', icon: 'chartLine' },
+  { path: '/spectrum', label: '频谱分析', hint: 'Spectrum', icon: 'chartBar' },
+  { path: '/markers', label: 'Marker 管理', hint: 'Markers', icon: 'pin' },
+  { path: '/generator', label: '数据发生器', hint: 'Generator', icon: 'zap' },
+  { path: '/tasks', label: '任务管理', hint: 'Tasks', icon: 'listTodo' },
+  { path: '/logs', label: '日志查看', hint: 'Logs', icon: 'fileText' },
+  { path: '/project-settings', label: '工程设置', hint: 'Project', icon: 'folder' },
+  { path: '/app-settings', label: '应用设置', hint: 'Application', icon: 'settings' }
 ]
 </script>
 
@@ -30,8 +32,11 @@ const items = [
       type="button"
       @click="router.push(item.path)"
     >
-      <span>{{ item.label }}</span>
-      <small>{{ item.hint }}</small>
+      <AppIcon class="nav-icon" :name="item.icon" />
+      <span class="nav-text">
+        <span>{{ item.label }}</span>
+        <small>{{ item.hint }}</small>
+      </span>
     </button>
   </nav>
 </template>
@@ -55,15 +60,28 @@ const items = [
 .nav-item {
   width: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
   padding: 8px 10px;
   margin-bottom: 2px;
   border: 1px solid transparent;
   background: transparent;
   border-radius: 8px;
   text-align: left;
+}
+
+.nav-icon {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.nav-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
 }
 
 .nav-item small {

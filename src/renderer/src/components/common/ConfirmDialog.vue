@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AppIcon from './AppIcon.vue'
+
 defineProps<{
   title: string
   message: string
@@ -18,13 +20,17 @@ const emit = defineEmits<{
       <h2>{{ title }}</h2>
       <p class="muted">{{ message }}</p>
       <footer>
-        <button class="btn" type="button" @click="emit('cancel')">取消</button>
+        <button class="btn" type="button" @click="emit('cancel')">
+          <AppIcon name="x" />
+          取消
+        </button>
         <button
           class="btn"
           :class="danger ? 'btn-danger' : 'btn-primary'"
           type="button"
           @click="emit('confirm')"
         >
+          <AppIcon :name="danger ? 'trash' : 'check'" />
           {{ confirmLabel ?? '确定' }}
         </button>
       </footer>

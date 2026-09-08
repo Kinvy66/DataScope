@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { CHANNEL_PRESETS } from '@shared/constants'
+import AppIcon from '../common/AppIcon.vue'
 import type { Channel, DatasetInfo, Marker, ViewportData } from '@shared/types/dataset'
 import { elapsedSeconds } from '@shared/markers/manage'
 import { formatNumber } from '../../utils/format'
@@ -504,20 +505,44 @@ function addMarkerAtCursor(): void {
 <template>
   <section class="waveform">
     <div class="wave-toolbar">
-      <button class="btn" type="button" @click="zoom(0.8)">放大</button>
-      <button class="btn" type="button" @click="zoom(1.25)">缩小</button>
-      <button class="btn" type="button" @click="fitAll">Fit All</button>
-      <button class="btn" type="button" @click="autoScale = true">Auto Scale</button>
+      <button class="btn" type="button" @click="zoom(0.8)">
+        <AppIcon name="zoomIn" />
+        放大
+      </button>
+      <button class="btn" type="button" @click="zoom(1.25)">
+        <AppIcon name="zoomOut" />
+        缩小
+      </button>
+      <button class="btn" type="button" @click="fitAll">
+        <AppIcon name="maximize" />
+        Fit All
+      </button>
+      <button class="btn" type="button" @click="autoScale = true">
+        <AppIcon name="unfold" />
+        Auto Scale
+      </button>
       <label class="lanes">
         通道显示
         <select v-model.number="maxLanes">
           <option v-for="preset in CHANNEL_PRESETS" :key="preset" :value="preset">{{ preset }}</option>
         </select>
       </label>
-      <button class="btn" type="button" :class="{ on: cursorMode === 'a' }" @click="cursorMode = 'a'">Cursor A</button>
-      <button class="btn" type="button" :class="{ on: cursorMode === 'b' }" @click="cursorMode = 'b'">Cursor B</button>
-      <button class="btn btn-ghost" type="button" @click="clearCursors">清除 Cursor</button>
-      <button class="btn btn-primary" type="button" @click="addMarkerAtCursor">从 Cursor A 添加 Marker</button>
+      <button class="btn" type="button" :class="{ on: cursorMode === 'a' }" @click="cursorMode = 'a'">
+        <AppIcon name="crosshair" />
+        Cursor A
+      </button>
+      <button class="btn" type="button" :class="{ on: cursorMode === 'b' }" @click="cursorMode = 'b'">
+        <AppIcon name="crosshair" />
+        Cursor B
+      </button>
+      <button class="btn btn-ghost" type="button" @click="clearCursors">
+        <AppIcon name="x" />
+        清除 Cursor
+      </button>
+      <button class="btn btn-primary" type="button" @click="addMarkerAtCursor">
+        <AppIcon name="plus" />
+        从 Cursor A 添加 Marker
+      </button>
     </div>
     <div class="wave-body">
       <aside class="channels">
@@ -529,8 +554,12 @@ function addMarkerAtCursor(): void {
         >
           <button class="swatch" type="button" :style="{ background: channel.color }" @click="toggleChannel(channel.id)" />
           <span>{{ channel.name }}</span>
-          <button class="tiny" type="button" @click="moveChannel(channel.id, -1)">↑</button>
-          <button class="tiny" type="button" @click="moveChannel(channel.id, 1)">↓</button>
+          <button class="tiny" type="button" title="上移" @click="moveChannel(channel.id, -1)">
+            <AppIcon name="arrowUp" :size="12" />
+          </button>
+          <button class="tiny" type="button" title="下移" @click="moveChannel(channel.id, 1)">
+            <AppIcon name="arrowDown" :size="12" />
+          </button>
         </div>
       </aside>
       <div ref="hostRef" class="canvas-wrap">
@@ -661,6 +690,10 @@ function addMarkerAtCursor(): void {
 .tiny {
   width: 22px;
   height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   border: 1px solid var(--border);
   background: var(--bg-panel-alt);
   border-radius: 4px;

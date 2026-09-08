@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+import AppIcon from '../common/AppIcon.vue'
 import AppToolbar from './AppToolbar.vue'
 import AppNavigation from './AppNavigation.vue'
 import AppStatusBar from './AppStatusBar.vue'
@@ -20,7 +21,10 @@ const projectStore = useProjectStore()
       <main class="workspace">
         <div v-if="appStore.globalError" class="error-banner">
           <span>{{ appStore.globalError }}</span>
-          <button class="btn btn-ghost" type="button" @click="appStore.setGlobalError(null)">关闭</button>
+          <button class="btn btn-ghost" type="button" @click="appStore.setGlobalError(null)">
+            <AppIcon name="x" />
+            关闭
+          </button>
         </div>
         <RouterView />
       </main>
@@ -48,7 +52,7 @@ const projectStore = useProjectStore()
 .shell {
   height: 100%;
   display: grid;
-  grid-template-rows: var(--toolbar-height) 1fr var(--statusbar-height);
+  grid-template-rows: auto 1fr var(--statusbar-height);
   background: var(--bg-app);
 }
 

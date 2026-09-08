@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import AppIcon from '../components/common/AppIcon.vue'
 import { useProjectStore } from '../stores/project'
 
 const projectStore = useProjectStore()
@@ -51,7 +52,10 @@ async function save(): Promise<void> {
         <textarea id="settings-description" v-model="description" />
       </div>
       <p class="muted">路径：{{ projectStore.current?.rootPath }}</p>
-      <button class="btn btn-primary" type="submit" :disabled="!canSave || projectStore.busy">保存工程</button>
+      <button class="btn btn-primary" type="submit" :disabled="!canSave || projectStore.busy">
+        <AppIcon name="save" />
+        保存工程
+      </button>
     </form>
     <div v-else class="panel empty-state">
       <p>当前没有打开的工程。</p>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, watch } from 'vue'
+import AppIcon from '../components/common/AppIcon.vue'
 import { useLogStore } from '../stores/log'
 import { formatTimestamp } from '../utils/format'
 
@@ -30,7 +31,10 @@ watch([() => logStore.level, () => logStore.search], () => {
         <option value="ERROR">ERROR</option>
       </select>
       <input v-model="logStore.search" placeholder="搜索日志" />
-      <button class="btn" type="button" @click="logStore.refresh()">刷新</button>
+      <button class="btn" type="button" @click="logStore.refresh()">
+        <AppIcon name="refresh" />
+        刷新
+      </button>
     </div>
     <div class="panel log-panel">
       <table class="table">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import AppIcon from '../components/common/AppIcon.vue'
 import { useProjectStore } from '../stores/project'
 import { useDatasetStore } from '../stores/dataset'
 import { formatPath, formatTimestamp } from '../utils/format'
@@ -25,8 +26,14 @@ const datasetStore = useDatasetStore()
         </p>
         <p v-else class="muted">新建或打开一个工程以开始。工程目录包含 project.json、data、exports、analysis 和 logs。</p>
         <div class="row">
-          <button class="btn btn-primary" type="button" @click="projectStore.openCreateDialog">新建工程</button>
-          <button class="btn" type="button" @click="projectStore.openProject()">打开工程</button>
+          <button class="btn btn-primary" type="button" @click="projectStore.openCreateDialog">
+            <AppIcon name="folderPlus" />
+            新建工程
+          </button>
+          <button class="btn" type="button" @click="projectStore.openProject()">
+            <AppIcon name="folderOpen" />
+            打开工程
+          </button>
         </div>
       </article>
 
@@ -37,20 +44,33 @@ const datasetStore = useDatasetStore()
           当前：{{ datasetStore.selected.name }} · {{ datasetStore.selected.channelCount }} ch ·
           {{ datasetStore.selected.sampleCount.toLocaleString() }} samples
         </p>
-        <div class="row">
-          <button class="btn btn-primary" type="button" @click="datasetStore.importData()">导入数据</button>
-          <button class="btn" type="button" @click="router.push('/data')">打开数据浏览</button>
+        <div class="row dataset-actions">
+          <button class="btn btn-primary" type="button" @click="datasetStore.importData()">
+            <AppIcon name="download" />
+            导入数据
+          </button>
+          <button class="btn" type="button" @click="router.push('/data')">
+            <AppIcon name="database" />
+            数据浏览
+          </button>
           <button class="btn" type="button" :disabled="!datasetStore.selected" @click="router.push('/signal')">
+            <AppIcon name="chartLine" />
             信号分析
           </button>
           <button class="btn" type="button" :disabled="!datasetStore.selected" @click="router.push('/spectrum')">
+            <AppIcon name="chartBar" />
             频谱分析
           </button>
           <button class="btn" type="button" :disabled="!datasetStore.selected" @click="router.push('/markers')">
+            <AppIcon name="pin" />
             Marker 管理
           </button>
-          <button class="btn" type="button" @click="router.push('/live')">实时监视</button>
+          <button class="btn" type="button" @click="router.push('/live')">
+            <AppIcon name="activity" />
+            实时监视
+          </button>
           <button class="btn" type="button" :disabled="!projectStore.hasProject" @click="router.push('/generator')">
+            <AppIcon name="zap" />
             数据发生器
           </button>
         </div>
@@ -61,6 +81,7 @@ const datasetStore = useDatasetStore()
       <div class="recent-head">
         <h2>最近工程</h2>
         <button class="btn btn-ghost" type="button" :disabled="projectStore.recent.length === 0" @click="projectStore.clearRecent()">
+          <AppIcon name="eraser" />
           清除历史
         </button>
       </div>
@@ -75,7 +96,10 @@ const datasetStore = useDatasetStore()
           <tr v-for="item in projectStore.recent" :key="item">
             <td>{{ formatPath(item) }}</td>
             <td>
-              <button class="btn" type="button" @click="projectStore.openProject(item)">打开</button>
+              <button class="btn" type="button" @click="projectStore.openProject(item)">
+                <AppIcon name="folderOpen" />
+                打开
+              </button>
             </td>
           </tr>
         </tbody>
@@ -93,12 +117,13 @@ const datasetStore = useDatasetStore()
 <style scoped>
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 12px;
 }
 
 .card,
 .recent {
+  min-width: 0;
   padding: 16px;
 }
 
@@ -109,19 +134,19 @@ h2 {
 
 .row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 16px;
+}
+
+.dataset-actions .btn {
+  flex: 0 1 auto;
 }
 
 .recent-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-@media (max-width: 1100px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
+  gap: 8px;
 }
 </style>

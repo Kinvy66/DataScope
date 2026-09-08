@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import AppIcon from '../common/AppIcon.vue'
 import { useProjectStore } from '../../stores/project'
 
 const projectStore = useProjectStore()
@@ -36,7 +37,10 @@ async function submit(): Promise<void> {
         <label for="project-location">位置</label>
         <div class="row">
           <input id="project-location" v-model="location" placeholder="选择保存目录" />
-          <button class="btn" type="button" @click="chooseLocation">浏览</button>
+          <button class="btn" type="button" @click="chooseLocation">
+            <AppIcon name="folderOpen" />
+            浏览
+          </button>
         </div>
       </div>
       <div class="field">
@@ -45,13 +49,17 @@ async function submit(): Promise<void> {
       </div>
       <p v-if="projectStore.errorMessage" class="muted">{{ projectStore.errorMessage }}</p>
       <footer>
-        <button class="btn" type="button" @click="projectStore.closeCreateDialog()">取消</button>
+        <button class="btn" type="button" @click="projectStore.closeCreateDialog()">
+          <AppIcon name="x" />
+          取消
+        </button>
         <button
           class="btn btn-primary"
           type="button"
           :disabled="projectStore.busy || !name.trim() || !location.trim()"
           @click="submit"
         >
+          <AppIcon name="plus" />
           创建
         </button>
       </footer>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import AppIcon from '../components/common/AppIcon.vue'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import WaveformViewer from '../components/waveform/WaveformViewer.vue'
 import { MARKER_TYPE_LABELS, elapsedSeconds } from '@shared/markers/manage'
@@ -66,6 +67,7 @@ async function confirmDelete(): Promise<void> {
         <div class="list-head">
           <strong>文件列表</strong>
           <button class="btn btn-primary" type="button" :disabled="datasetStore.busy" @click="datasetStore.importData()">
+            <AppIcon name="download" />
             导入
           </button>
         </div>
@@ -83,7 +85,10 @@ async function confirmDelete(): Promise<void> {
           type="button"
           @click="datasetStore.select(item.id)"
         >
-          <span>{{ item.name }}</span>
+          <span class="file-name">
+            <AppIcon name="database" :size="14" />
+            <span>{{ item.name }}</span>
+          </span>
           <small>{{ item.channelCount }} ch · {{ item.sampleCount.toLocaleString() }} · {{ item.metadata.sourceFormat.toUpperCase() }}</small>
         </button>
         <p v-if="datasetStore.datasets.length === 0" class="muted">还没有导入数据。</p>
@@ -117,9 +122,13 @@ async function confirmDelete(): Promise<void> {
           <div class="row">
             <template v-if="renamingId === datasetStore.selected.id">
               <button class="btn btn-primary" type="button" :disabled="datasetStore.busy" @click="commitRename">
+                <AppIcon name="save" />
                 保存名称
               </button>
-              <button class="btn" type="button" @click="cancelRename">取消</button>
+              <button class="btn" type="button" @click="cancelRename">
+                <AppIcon name="x" />
+                取消
+              </button>
             </template>
             <template v-else>
               <button
@@ -128,6 +137,7 @@ async function confirmDelete(): Promise<void> {
                 :disabled="datasetStore.busy"
                 @click="startRename(datasetStore.selected.id, datasetStore.selected.name)"
               >
+                <AppIcon name="pencil" />
                 重命名
               </button>
               <button
@@ -136,6 +146,7 @@ async function confirmDelete(): Promise<void> {
                 :disabled="datasetStore.busy"
                 @click="requestDelete(datasetStore.selected.id)"
               >
+                <AppIcon name="trash" />
                 删除
               </button>
             </template>
@@ -194,7 +205,10 @@ async function confirmDelete(): Promise<void> {
           </table>
           <p v-else class="muted">当前数据集没有 Marker。可在波形工具栏从 Cursor A 添加，或打开 Marker 管理页。</p>
           <div class="row">
-            <button class="btn" type="button" @click="router.push('/markers')">打开 Marker 管理</button>
+            <button class="btn" type="button" @click="router.push('/markers')">
+              <AppIcon name="pin" />
+              打开 Marker 管理
+            </button>
           </div>
         </article>
 
@@ -301,6 +315,17 @@ async function confirmDelete(): Promise<void> {
   color: var(--text-muted);
 }
 
+.file-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.file-name .app-icon {
+  color: var(--accent);
+}
+
 .file.active {
   border-color: var(--accent);
 }
@@ -344,6 +369,7 @@ dd {
 
 .row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 12px;
 }

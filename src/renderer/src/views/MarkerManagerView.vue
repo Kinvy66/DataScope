@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import AppIcon from '../components/common/AppIcon.vue'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import {
   MARKER_TYPE_COLORS,
@@ -163,7 +164,10 @@ async function jumpToWaveform(): Promise<void> {
 
     <div v-else-if="!datasetStore.selected" class="panel empty-state">
       <p>当前工程还没有数据集。</p>
-      <button class="btn btn-primary" type="button" @click="router.push('/data')">前往数据浏览</button>
+      <button class="btn btn-primary" type="button" @click="router.push('/data')">
+        <AppIcon name="database" />
+        前往数据浏览
+      </button>
     </div>
 
     <div v-else class="layout">
@@ -222,6 +226,7 @@ async function jumpToWaveform(): Promise<void> {
         </div>
         <div class="row">
           <button class="btn btn-primary" type="button" :disabled="datasetStore.busy" @click="submitAdd">
+            <AppIcon name="plus" />
             添加
           </button>
           <button
@@ -230,6 +235,7 @@ async function jumpToWaveform(): Promise<void> {
             :disabled="datasetStore.busy || !selectedMarker"
             @click="submitUpdate"
           >
+            <AppIcon name="save" />
             保存修改
           </button>
           <button
@@ -238,12 +244,19 @@ async function jumpToWaveform(): Promise<void> {
             :disabled="datasetStore.busy || !selectedMarker"
             @click="requestDelete"
           >
+            <AppIcon name="trash" />
             删除
           </button>
         </div>
         <div class="row">
-          <button class="btn" type="button" @click="jumpToWaveform">跳转到波形</button>
-          <button class="btn btn-ghost" type="button" @click="startCreate">清空表单</button>
+          <button class="btn" type="button" @click="jumpToWaveform">
+            <AppIcon name="activity" />
+            跳转到波形
+          </button>
+          <button class="btn btn-ghost" type="button" @click="startCreate">
+            <AppIcon name="eraser" />
+            清空表单
+          </button>
         </div>
       </aside>
 

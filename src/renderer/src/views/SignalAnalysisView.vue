@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import AppIcon from '../components/common/AppIcon.vue'
 import { elapsedSeconds } from '@shared/markers/manage'
 import { useAnalysisStore } from '../stores/analysis'
 import { useDatasetStore } from '../stores/dataset'
@@ -46,7 +47,10 @@ const windowLabel = computed(() => {
 
     <div v-else-if="!dataset" class="panel empty-state">
       <p>当前工程还没有可分析的数据集。</p>
-      <button class="btn btn-primary" type="button" @click="router.push('/data')">前往数据浏览</button>
+      <button class="btn btn-primary" type="button" @click="router.push('/data')">
+        <AppIcon name="database" />
+        前往数据浏览
+      </button>
     </div>
 
     <template v-else>
@@ -71,7 +75,10 @@ const windowLabel = computed(() => {
                 {{ channel.name }}
               </label>
             </div>
-            <button class="btn btn-ghost" type="button" @click="analysisStore.selectAllChannels()">全选通道</button>
+            <button class="btn btn-ghost" type="button" @click="analysisStore.selectAllChannels()">
+              <AppIcon name="checkSquare" />
+              全选通道
+            </button>
           </div>
 
           <div class="range">
@@ -98,13 +105,17 @@ const windowLabel = computed(() => {
           </div>
           <p class="muted">{{ windowLabel }}</p>
           <div class="row">
-            <button class="btn" type="button" @click="analysisStore.useFullRange()">全范围</button>
+            <button class="btn" type="button" @click="analysisStore.useFullRange()">
+              <AppIcon name="maximize" />
+              全范围
+            </button>
             <button
               class="btn btn-primary"
               type="button"
               :disabled="!analysisStore.canRun"
               @click="analysisStore.run()"
             >
+              <AppIcon name="play" />
               {{ analysisStore.busy ? '分析中…' : '运行分析' }}
             </button>
           </div>
@@ -158,6 +169,7 @@ const windowLabel = computed(() => {
               :disabled="!filterStore.canApply"
               @click="filterStore.apply()"
             >
+              <AppIcon name="filter" />
               {{ filterStore.busy ? '滤波中…' : '应用滤波并保存' }}
             </button>
           </div>
@@ -213,8 +225,14 @@ const windowLabel = computed(() => {
               {{ filterStore.result.sampleCount.toLocaleString() }} samples
             </p>
             <div class="row">
-              <button class="btn" type="button" @click="router.push('/data')">打开数据浏览</button>
-              <button class="btn" type="button" @click="router.push('/spectrum')">去频谱验证</button>
+              <button class="btn" type="button" @click="router.push('/data')">
+                <AppIcon name="database" />
+                打开数据浏览
+              </button>
+              <button class="btn" type="button" @click="router.push('/spectrum')">
+                <AppIcon name="chartBar" />
+                去频谱验证
+              </button>
             </div>
           </template>
         </article>
@@ -278,6 +296,7 @@ h2 {
 
 .row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 12px;
 }

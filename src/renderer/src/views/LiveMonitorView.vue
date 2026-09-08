@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import AppIcon from '../components/common/AppIcon.vue'
 import LivePlot from '../components/live/LivePlot.vue'
+import type { IconName } from '../components/common/icons'
 import { DAQ_COMMAND_LABELS, DAQ_STATE_LABELS, type DaqCommand } from '@shared/types/live'
 import { WAVEFORM_KINDS } from '@shared/types/generator'
 import { useLiveStore } from '../stores/live'
@@ -11,6 +13,17 @@ import { formatDuration, formatNumber } from '../utils/format'
 const router = useRouter()
 const liveStore = useLiveStore()
 const projectStore = useProjectStore()
+
+const commandIcons: Record<DaqCommand, IconName> = {
+  connect: 'plug',
+  arm: 'shield',
+  start: 'play',
+  pause: 'pause',
+  resume: 'play',
+  stop: 'square',
+  disconnect: 'power',
+  reset: 'rotateCcw'
+}
 
 const waveformLabels: Record<(typeof WAVEFORM_KINDS)[number], string> = {
   sine: '正弦波',
@@ -138,6 +151,7 @@ onMounted(() => {
             :disabled="liveStore.busy || !liveStore.can.has(item)"
             @click="liveStore.command(item)"
           >
+            <AppIcon :name="commandIcons[item]" />
             {{ DAQ_COMMAND_LABELS[item] }}
           </button>
         </div>
@@ -152,10 +166,12 @@ onMounted(() => {
           :disabled="liveStore.busy || !liveStore.status?.canCapture || !projectStore.hasProject"
           @click="liveStore.capture()"
         >
+          <AppIcon name="hardDrive" />
           将缓冲写入工程
         </button>
         <p v-if="!projectStore.hasProject" class="muted">写入工程需要先打开工程。</p>
         <button class="btn btn-ghost" type="button" :disabled="!projectStore.hasProject" @click="router.push('/data')">
+          <AppIcon name="database" />
           打开数据浏览
         </button>
       </aside>

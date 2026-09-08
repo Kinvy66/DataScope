@@ -1,10 +1,30 @@
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   height: 32px;
-  padding: 0 12px;
+  padding: 0 10px;
   border: 1px solid var(--border);
   background: var(--bg-panel-alt);
   color: var(--text);
   border-radius: 6px;
+  white-space: nowrap;
+  flex: 0 1 auto;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+}
+
+.app-icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.btn .app-icon {
+  width: 14px;
+  height: 14px;
 }
 
 .btn:hover:not(:disabled) {

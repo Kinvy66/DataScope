@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import AppIcon from '../components/common/AppIcon.vue'
 import { FFT_SIZES } from '@shared/algorithms/fft'
 import SpectrumPlot from '../components/spectrum/SpectrumPlot.vue'
 import { useDatasetStore } from '../stores/dataset'
@@ -55,7 +56,10 @@ const plotColor = computed(() => {
 
     <div v-else-if="!dataset" class="panel empty-state">
       <p>当前工程还没有可分析的数据集。</p>
-      <button class="btn btn-primary" type="button" @click="router.push('/data')">前往数据浏览</button>
+      <button class="btn btn-primary" type="button" @click="router.push('/data')">
+        <AppIcon name="database" />
+        前往数据浏览
+      </button>
     </div>
 
     <template v-else>
@@ -80,7 +84,10 @@ const plotColor = computed(() => {
                 {{ channel.name }}
               </label>
             </div>
-            <button class="btn btn-ghost" type="button" @click="spectrumStore.selectAllChannels()">全选通道</button>
+            <button class="btn btn-ghost" type="button" @click="spectrumStore.selectAllChannels()">
+              <AppIcon name="checkSquare" />
+              全选通道
+            </button>
           </div>
 
           <div class="range">
@@ -122,13 +129,17 @@ const plotColor = computed(() => {
           </div>
           <p class="muted">{{ windowLabel }}</p>
           <div class="row">
-            <button class="btn" type="button" @click="spectrumStore.useFullRange()">全范围</button>
+            <button class="btn" type="button" @click="spectrumStore.useFullRange()">
+              <AppIcon name="maximize" />
+              全范围
+            </button>
             <button
               class="btn btn-primary"
               type="button"
               :disabled="!spectrumStore.canRun"
               @click="spectrumStore.run()"
             >
+              <AppIcon name="play" />
               {{ spectrumStore.busy ? '分析中…' : '运行 FFT' }}
             </button>
           </div>
@@ -259,6 +270,7 @@ h2 {
 
 .row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 12px;
 }

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AppIcon from '../common/AppIcon.vue'
+
 defineProps<{
   title: string
 }>()
@@ -16,9 +18,18 @@ const emit = defineEmits<{
       <h2>{{ title }}</h2>
       <p class="muted">当前工程包含未保存的修改，请选择如何处理。</p>
       <footer>
-        <button class="btn" type="button" @click="emit('cancel')">取消</button>
-        <button class="btn" type="button" @click="emit('discard')">不保存</button>
-        <button class="btn btn-primary" type="button" @click="emit('save')">保存</button>
+        <button class="btn" type="button" @click="emit('cancel')">
+          <AppIcon name="x" />
+          取消
+        </button>
+        <button class="btn" type="button" @click="emit('discard')">
+          <AppIcon name="eraser" />
+          不保存
+        </button>
+        <button class="btn btn-primary" type="button" @click="emit('save')">
+          <AppIcon name="save" />
+          保存
+        </button>
       </footer>
     </section>
   </div>
