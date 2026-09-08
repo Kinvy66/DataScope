@@ -10,6 +10,7 @@ import type { AnalysisRequest } from '@shared/types/analysis'
 import type { SpectrumRequest } from '@shared/types/spectrum'
 import type { GeneratorRequest } from '@shared/types/generator'
 import type { MarkerDraft, SourceFormat, ViewportRequest } from '@shared/types/dataset'
+import type { DaqCommand, LiveConfig, LiveViewportRequest } from '@shared/types/live'
 import { logger } from '../services/logger'
 import { settingsService } from '../services/settings'
 import { projectService } from '../services/project'
@@ -26,6 +27,7 @@ import {
   updateMarker,
   removeMarker
 } from '../services/importer'
+import { liveService } from '../services/live'
 
 let allowQuit = false
 
@@ -216,6 +218,24 @@ export function registerIpcHandlers(): void {
       return wrap(() => removeMarker(datasetId, markerId))
     }
   )
+
+  ipcMain.handle(IpcChannel.LiveGetStatus, async () => liveService.status())
+
+  ipcMain.handle(IpcChannel.LiveConfigure, async (_event, config: LiveConfig) => {
+    return wrap(() => liveService.configure(config))
+  })
+
+  ipcMain.handle(IpcChannel.LiveCommand, async (_event, command: DaqCommand) => {
+    return wrap(() => liveService.command(command))
+  })
+
+  ipcMain.handle(IpcChannel.LiveGetViewport, async (_event, request: LiveViewportRequest) => {
+    return wrap(() => liveService.getViewport(request))
+  })
+
+  ipcMain.handle(IpcChannel.LiveCapture, async (_event, name: string) => {
+    return wrap(() => liveService.capture(name))
+  })
 }
 
 export function attachCloseGuard(window: BrowserWindow): void {

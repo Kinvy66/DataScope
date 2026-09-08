@@ -1,6 +1,6 @@
 # DataScope
 
-DataScope 是一个用于软件测试学习的多通道时序数据桌面软件。当前版本覆盖 Phase 1–7 与 8A：基础框架、工程管理、数据导入、波形可视化、时域分析、频谱分析、Marker、离线数据发生器。
+DataScope 是一个用于软件测试学习的多通道时序数据桌面软件。当前版本覆盖 Phase 1–8B：基础框架、工程管理、数据导入、波形可视化、时域分析、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视。
 
 使用手册（中文，含阶段标注）：[`docs/wiki/README.md`](docs/wiki/README.md)
 
@@ -60,7 +60,7 @@ JSON 支持行主序 `[timestamp, ch1, ...]` 或通道主序 `samples[channel][s
 ## 架构
 
 - Renderer：UI、页面状态、波形绘制
-- Main：文件系统、工程、导入、分析、日志
+- Main：文件系统、工程、导入、分析、日志、Virtual DAQ
 - Preload：通过 `window.datascope` 暴露 IPC，Renderer 不直接访问 Node.js API
 
 波形路径：`Dataset → Viewport → Min-Max Downsampling → Canvas`
@@ -70,3 +70,5 @@ JSON 支持行主序 `[timestamp, ch1, ...]` 或通道主序 `samples[channel][s
 发生器路径：`参数 → 合成波形 → data/*.json → Dataset 列表`
 
 Marker 路径：`表单 / Cursor → shared/markers → project.json → 波形竖线`
+
+实时路径：`Virtual DAQ → Packet/CRC → 环形缓冲 → Viewport → Canvas`（停止后可写入 `data/*.json`）

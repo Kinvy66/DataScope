@@ -5,6 +5,7 @@ import { createMainWindow } from './windows/mainWindow'
 import { attachCloseGuard, registerIpcHandlers } from './ipc'
 import { logger } from './services/logger'
 import { settingsService } from './services/settings'
+import { liveService } from './services/live'
 
 app.whenReady().then(async () => {
   electronApp.setAppUserModelId('com.datascope.app')
@@ -30,9 +31,14 @@ app.whenReady().then(async () => {
 })
 
 app.on('window-all-closed', () => {
+  liveService.dispose()
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('before-quit', () => {
+  liveService.dispose()
 })
 
 process.on('uncaughtException', (error) => {

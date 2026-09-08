@@ -88,21 +88,31 @@ export async function importDataset(filePath: string, format: SourceFormat): Pro
 }
 
 export async function generateDataset(request: GeneratorRequest): Promise<DatasetInfo> {
-  const project = projectService.requireOpen()
   const dataset = generateDatasetFromRequest(request)
+  const info = await saveDatasetToProject(dataset)
+  await logger.write('INFO', 'Dataset generated', 'main', {
+    name: dataset.name,
+    kind: request.kind,
+    channels: dataset.channelCount,
+    samples: dataset.sampleCount
+  })
+  return info
+}
+
+export async function saveDatasetToProject(dataset: Dataset): Promise<DatasetInfo> {
+  const project = projectService.requireOpen()
   validateDataset(dataset)
 
   if (dataset.sampleCount * dataset.channelCount >= LARGE_DATASET_THRESHOLD) {
     await logger.write('WARNING', 'Large dataset detected', 'main', {
       samples: dataset.sampleCount,
-      channels: dataset.channelCount,
-      source: 'generator'
+      channels: dataset.channelCount
     })
   }
 
   const dataDir = projectService.dataDirectory()
   await mkdir(dataDir, { recursive: true })
-  const stem = dataset.name.replace(/[<>:"/\\|?*]/g, '_').slice(0, 48) || 'generated'
+  const stem = dataset.name.replace(/[<>:"/\\|?*]/g, '_').slice(0, 48) || 'dataset'
   const targetName = uniqueFileName(dataDir, `${stem}.json`)
   const targetPath = join(dataDir, targetName)
   const json = serializeGeneratedJson(dataset)
@@ -128,14 +138,6 @@ export async function generateDataset(request: GeneratorRequest): Promise<Datase
     project.file.sampleRate = dataset.sampleRate
   }
   projectService.markDirty()
-
-  await logger.write('INFO', 'Dataset generated', 'main', {
-    name: dataset.name,
-    kind: request.kind,
-    channels: dataset.channelCount,
-    samples: dataset.sampleCount
-  })
-
   return info
 }
 

@@ -3,10 +3,13 @@ import { computed } from 'vue'
 import { useAppStore } from '../../stores/app'
 import { useProjectStore } from '../../stores/project'
 import { useDatasetStore } from '../../stores/dataset'
+import { useLiveStore } from '../../stores/live'
+import { DAQ_STATE_LABELS } from '@shared/types/live'
 
 const appStore = useAppStore()
 const projectStore = useProjectStore()
 const datasetStore = useDatasetStore()
+const liveStore = useLiveStore()
 
 const channelCount = computed(() => datasetStore.selected?.channelCount ?? 0)
 const sampleCount = computed(() => datasetStore.selected?.sampleCount ?? 0)
@@ -21,6 +24,8 @@ const sampleCount = computed(() => datasetStore.selected?.sampleCount ?? 0)
     <span>{{ channelCount }} ch</span>
     <span class="sep">|</span>
     <span>{{ sampleCount.toLocaleString() }} samples</span>
+    <span class="sep">|</span>
+    <span>DAQ：{{ DAQ_STATE_LABELS[liveStore.state] }}</span>
     <span class="grow"></span>
     <span>{{ appStore.settings.theme === 'dark' ? 'Dark' : 'Light' }}</span>
     <span class="sep">|</span>

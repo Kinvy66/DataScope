@@ -34,6 +34,9 @@ function toggleTheme(): void {
       </button>
     </div>
     <div class="spacer"></div>
+    <button class="btn btn-ghost" type="button" :class="{ on: route.path === '/live' }" @click="router.push('/live')">
+      实时
+    </button>
     <button class="btn btn-ghost" type="button" :class="{ on: route.path === '/data' }" @click="router.push('/data')">
       数据浏览
     </button>

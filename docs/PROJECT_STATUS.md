@@ -8,8 +8,8 @@
 | 分支 | `master` |
 | 进度基准 | 以本文件所在 commit 为准 |
 | 产品阶段 | V1.0 Clean（禁止故意注入缺陷） |
-| 已完成 | Phase 1–7、8A：框架、工程、导入、波形、时域分析、频谱分析、Marker、离线数据发生器 |
-| 建议下一阶段 | 数字滤波，或 Live Monitor / Virtual DAQ（8B） |
+| 已完成 | Phase 1–8B：框架、工程、导入、波形、时域分析、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视 |
+| 建议下一阶段 | 数字滤波，或任务系统（9） / 数据导出（10） |
 
 使用手册：[`docs/wiki/README.md`](./wiki/README.md)  
 开发任务书：[`docs/dev_plan/README.md`](./dev_plan/README.md)
@@ -26,13 +26,13 @@
 | 6 | 频谱分析 | 已完成 | Radix-2 FFT、窗函数、幅度/功率谱、峰值频率、Canvas 频谱图 |
 | 7 | Marker | 已完成 | 添加 / 编辑 / 删除，写入 `project.json`，与波形跳转联动 |
 | 8A | 数据发生器 | 已完成 | 离线合成波形并写入工程 JSON |
-| 8B | 实时数据 / Virtual DAQ | 未开始 | `Live Monitor` 仍为占位页 |
+| 8B | 实时数据 / Virtual DAQ | 已完成 | 状态机、进程内组包校验、环形缓冲、Live 波形、停止后写入工程 |
 | 9 | 任务系统 | 未开始 | `Task Manager` 占位 |
 | 10 | 数据导出 | 未开始 | 工程目录有 `exports/`，无导出流程 |
 | 11 | 设置系统 | 部分完成 | 主题与日志级别可用；无完整 i18n |
 | 12 | 测试支持 / E2E | 部分完成 | 有 Vitest 单测与 fixtures；无 Playwright / Electron E2E |
 
-占位页（`PhasePage.vue`，不算已实现）：实时监视、任务管理。
+占位页（`PhasePage.vue`，不算已实现）：任务管理。
 
 信号处理中的 **数字滤波** 尚未开始，不要与已完成的 FFT 频谱混为一谈。
 
@@ -93,6 +93,14 @@
 - IPC `dataset:generate`，结果写入 `data/*.json` 并进入 Dataset 列表
 - 单测：`tests/generators/waveform.spec.ts`（含生成正弦再 FFT 找回频率）
 
+### Phase 8B Virtual DAQ / 实时监视
+
+- 状态机：`Disconnected → Connected → Ready → Running ⇄ Paused → Stopped`，非法转换拒绝；`Error` 可复位
+- 数据流：Virtual DAQ → 二进制数据包（CRC）→ 校验 → 环形缓冲 → 降采样 Canvas / 停止后写入工程
+- 传输：进程内回环，不是真实 TCP/UDP 网口，也不是真实采集卡
+- IPC `live:*`；页面 `LiveMonitorView`；底栏显示 DAQ 状态
+- 单测：`tests/live/*.spec.ts`
+
 ## 测试与验证
 
 已有单测：
@@ -106,6 +114,10 @@
 - `tests/analysis/spectrum.spec.ts`
 - `tests/generators/waveform.spec.ts`
 - `tests/markers/manage.spec.ts`
+- `tests/live/stateMachine.spec.ts`
+- `tests/live/packet.spec.ts`
+- `tests/live/buffer.spec.ts`
+- `tests/live/config.spec.ts
 
 fixtures：`tests/fixtures/csv/*`、`tests/fixtures/json/normal.json`；示例数据：`samples/`（含 `perg-ioba-0001.csv`）。
 
@@ -120,7 +132,7 @@ npm run build
 
 ## 建议下一阶段
 
-**数字滤波**（高通 / 低通 / 带通 / 陷波）或 **Live Monitor / Virtual DAQ（8B）**。滤波与已完成的 FFT 频谱分开做。不要顺手做导出或任务系统。
+**数字滤波**（高通 / 低通 / 带通 / 陷波）补齐信号分析；或按依赖链做 **任务系统 / 数据导出**。不要把滤波和导出混在一次提交里。故障注入（丢包、乱序等）留给 testing-lab，不要在 V1.0 Clean 里故意加缺陷。
 
 ## 维护规则
 

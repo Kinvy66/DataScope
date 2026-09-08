@@ -10,6 +10,12 @@ import type { AnalysisRequest, AnalysisResult } from './analysis'
 import type { SpectrumRequest, SpectrumResult } from './spectrum'
 import type { GeneratorRequest } from './generator'
 import type {
+  DaqCommand,
+  LiveConfig,
+  LiveStatus,
+  LiveViewportRequest
+} from './live'
+import type {
   ChannelStatistics,
   DatasetInfo,
   MarkerDraft,
@@ -68,6 +74,14 @@ export interface DataScopeAPI {
     addMarker: (datasetId: string, draft: MarkerDraft) => Promise<DatasetInfo>
     updateMarker: (datasetId: string, markerId: string, draft: MarkerDraft) => Promise<DatasetInfo>
     removeMarker: (datasetId: string, markerId: string) => Promise<DatasetInfo>
+  }
+  live: {
+    getStatus: () => Promise<LiveStatus>
+    configure: (config: LiveConfig) => Promise<LiveStatus>
+    command: (command: DaqCommand) => Promise<LiveStatus>
+    getViewport: (request: LiveViewportRequest) => Promise<ViewportData>
+    capture: (name: string) => Promise<DatasetInfo>
+    onStatus: (handler: (status: LiveStatus) => void) => () => void
   }
 }
 

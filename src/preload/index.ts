@@ -8,6 +8,7 @@ import type { AnalysisRequest } from '@shared/types/analysis'
 import type { SpectrumRequest } from '@shared/types/spectrum'
 import type { GeneratorRequest } from '@shared/types/generator'
 import type { MarkerDraft, SourceFormat, ViewportRequest } from '@shared/types/dataset'
+import type { DaqCommand, LiveConfig, LiveStatus, LiveViewportRequest } from '@shared/types/live'
 
 const api: DataScopeAPI = {
   app: {
@@ -66,6 +67,19 @@ const api: DataScopeAPI = {
       ipcRenderer.invoke(IpcChannel.DatasetUpdateMarker, datasetId, markerId, draft),
     removeMarker: (datasetId: string, markerId: string) =>
       ipcRenderer.invoke(IpcChannel.DatasetRemoveMarker, datasetId, markerId)
+  },
+  live: {
+    getStatus: () => ipcRenderer.invoke(IpcChannel.LiveGetStatus),
+    configure: (config: LiveConfig) => ipcRenderer.invoke(IpcChannel.LiveConfigure, config),
+    command: (command: DaqCommand) => ipcRenderer.invoke(IpcChannel.LiveCommand, command),
+    getViewport: (request: LiveViewportRequest) =>
+      ipcRenderer.invoke(IpcChannel.LiveGetViewport, request),
+    capture: (name: string) => ipcRenderer.invoke(IpcChannel.LiveCapture, name),
+    onStatus: (handler) => {
+      const listener = (_event: unknown, status: LiveStatus): void => handler(status)
+      ipcRenderer.on(IpcChannel.LiveStatusChanged, listener)
+      return () => ipcRenderer.removeListener(IpcChannel.LiveStatusChanged, listener)
+    }
   }
 }
 

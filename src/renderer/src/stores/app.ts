@@ -5,6 +5,7 @@ import type { AppInfo } from '@shared/types/app'
 import { useProjectStore } from './project'
 import { useDatasetStore } from './dataset'
 import { useLogStore } from './log'
+import { useLiveStore } from './live'
 
 export const useAppStore = defineStore('app', () => {
   const settings = ref<AppSettings>({ ...DEFAULT_SETTINGS, recentProjects: [] })
@@ -22,9 +23,11 @@ export const useAppStore = defineStore('app', () => {
     const projectStore = useProjectStore()
     const datasetStore = useDatasetStore()
     const logStore = useLogStore()
+    const liveStore = useLiveStore()
     await projectStore.hydrate()
     await datasetStore.refresh()
     await logStore.refresh()
+    await liveStore.hydrate()
     window.datascope.app.onCloseRequested(() => {
       closeDialogOpen.value = true
     })

@@ -49,6 +49,7 @@ const datasetStore = useDatasetStore()
           <button class="btn" type="button" :disabled="!datasetStore.selected" @click="router.push('/markers')">
             Marker 管理
           </button>
+          <button class="btn" type="button" @click="router.push('/live')">实时监视</button>
           <button class="btn" type="button" :disabled="!projectStore.hasProject" @click="router.push('/generator')">
             数据发生器
           </button>

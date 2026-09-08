@@ -36,7 +36,14 @@ export const IpcChannel = {
   DatasetGenerate: 'dataset:generate',
   DatasetAddMarker: 'dataset:addMarker',
   DatasetUpdateMarker: 'dataset:updateMarker',
-  DatasetRemoveMarker: 'dataset:removeMarker'
+  DatasetRemoveMarker: 'dataset:removeMarker',
+
+  LiveGetStatus: 'live:getStatus',
+  LiveConfigure: 'live:configure',
+  LiveCommand: 'live:command',
+  LiveGetViewport: 'live:getViewport',
+  LiveCapture: 'live:capture',
+  LiveStatusChanged: 'live:statusChanged'
 } as const
 
 export type IpcChannelName = (typeof IpcChannel)[keyof typeof IpcChannel]

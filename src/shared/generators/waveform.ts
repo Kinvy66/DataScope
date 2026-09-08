@@ -40,11 +40,24 @@ export function generateChannel(
   channelIndex: number,
   sampleCount: number
 ): number[] {
-  const random = mulberry32((request.seed ?? 1) + channelIndex * 997)
-  const phase = (2 * Math.PI * channelIndex) / Math.max(request.channelCount, 1)
-  const values = new Array<number>(sampleCount)
+  return generateChannelRange(request, channelIndex, 0, sampleCount)
+}
 
-  for (let n = 0; n < sampleCount; n += 1) {
+export function generateChannelRange(
+  request: Pick<
+    GeneratorRequest,
+    'kind' | 'sampleRate' | 'frequency' | 'amplitude' | 'offset' | 'noiseLevel' | 'channelCount' | 'seed'
+  >,
+  channelIndex: number,
+  startIndex: number,
+  count: number
+): number[] {
+  const random = mulberry32((request.seed ?? 1) + channelIndex * 997 + startIndex * 13)
+  const phase = (2 * Math.PI * channelIndex) / Math.max(request.channelCount, 1)
+  const values = new Array<number>(count)
+
+  for (let i = 0; i < count; i += 1) {
+    const n = startIndex + i
     const t = n / request.sampleRate
     const omega = 2 * Math.PI * request.frequency * t + phase
     let value = 0
@@ -77,7 +90,7 @@ export function generateChannel(
     if (request.kind !== 'noise' && request.noiseLevel > 0) {
       value += (random() * 2 - 1) * request.noiseLevel
     }
-    values[n] = value
+    values[i] = value
   }
 
   return values
