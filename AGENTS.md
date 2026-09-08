@@ -144,6 +144,8 @@ npm run build
 | --- | --- |
 | `docs/PRD.md` | 产品需求 |
 | `docs/PROJECT_STATUS.md` | 已合入进度；阶段完成后更新并随 commit 推送 |
+| `docs/wiki/README.md` | 中文使用手册（含阶段标注） |
+| `docs/dev_plan/README.md` | 阶段任务书索引 |
 | `docs/AI_DEVELOPMENT_PROMPT.md` | 自动迭代开发（含完成后的 Summary 格式） |
 | `docs/dev_plan/DataScope Vibe Coding 总控 Prompt.md` | 分阶段实施约束 |
 | `docs/dev_plan/Phase * Prompt.md` | 各阶段历史任务书 |
