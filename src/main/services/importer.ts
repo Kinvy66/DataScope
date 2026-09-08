@@ -6,9 +6,18 @@ import { DataScopeError } from '@shared/errors'
 import { parseCSV, parseTXT } from '@shared/parsers/csv'
 import { parseJSON } from '@shared/parsers/json'
 import { validateDatasetName } from '@shared/datasets/query'
+import {
+  applyProjectMarkers,
+  createMarker,
+  insertMarker,
+  removeMarker as removeMarkerFromList,
+  replaceMarker,
+  toProjectMarkerRef,
+  updateMarker as applyMarkerDraft
+} from '@shared/markers/manage'
 import { validateDataset } from '@shared/parsers/dataset'
 import { generateDatasetFromRequest, serializeGeneratedJson } from '@shared/generators/waveform'
-import type { Dataset, DatasetInfo, SourceFormat } from '@shared/types/dataset'
+import type { Dataset, DatasetInfo, Marker, MarkerDraft, SourceFormat } from '@shared/types/dataset'
 import type { GeneratorRequest } from '@shared/types/generator'
 import type { DataFileRef } from '@shared/types/project'
 import { logger } from './logger'
@@ -150,6 +159,7 @@ export async function loadProjectDatasets(): Promise<DatasetInfo[]> {
       dataset.id = ref.id
       dataset.name = ref.name
       dataset.metadata.encoding = encoding
+      dataset.markers = applyProjectMarkers(dataset, project.file.markers)
       validateDataset(dataset)
       loaded.push(datasetRegistry.add(dataset))
     } catch (error) {
@@ -181,6 +191,7 @@ export async function removeDataset(datasetId: string): Promise<void> {
   const ref = project.file.dataFiles.find((item) => item.id === datasetId)
   datasetRegistry.remove(datasetId)
   project.file.dataFiles = project.file.dataFiles.filter((item) => item.id !== datasetId)
+  project.file.markers = project.file.markers.filter((item) => item.datasetId !== datasetId)
   project.file.channelCount = project.file.dataFiles.reduce(
     (max, item) => Math.max(max, item.channelCount),
     0
@@ -197,6 +208,52 @@ export async function removeDataset(datasetId: string): Promise<void> {
   }
   projectService.markDirty()
   await logger.write('INFO', 'Dataset removed', 'main', { id: datasetId })
+}
+
+export async function addMarker(datasetId: string, draft: MarkerDraft): Promise<DatasetInfo> {
+  projectService.requireOpen()
+  const dataset = datasetRegistry.get(datasetId)
+  const marker = createMarker(dataset, draft)
+  const markers = insertMarker(dataset.markers, marker)
+  return persistMarkers(datasetId, markers, 'Marker added')
+}
+
+export async function updateMarker(
+  datasetId: string,
+  markerId: string,
+  draft: MarkerDraft
+): Promise<DatasetInfo> {
+  projectService.requireOpen()
+  const dataset = datasetRegistry.get(datasetId)
+  const current = dataset.markers.find((item) => item.id === markerId)
+  if (!current) {
+    throw new DataScopeError('FILE_NOT_FOUND', `未找到 Marker: ${markerId}`)
+  }
+  const marker = applyMarkerDraft(dataset, current, draft)
+  const markers = replaceMarker(dataset.markers, marker)
+  return persistMarkers(datasetId, markers, 'Marker updated')
+}
+
+export async function removeMarker(datasetId: string, markerId: string): Promise<DatasetInfo> {
+  projectService.requireOpen()
+  const dataset = datasetRegistry.get(datasetId)
+  const markers = removeMarkerFromList(dataset.markers, markerId)
+  return persistMarkers(datasetId, markers, 'Marker removed')
+}
+
+function persistMarkers(datasetId: string, markers: Marker[], logMessage: string): DatasetInfo {
+  const project = projectService.requireOpen()
+  const info = datasetRegistry.setMarkers(datasetId, markers)
+  project.file.markers = [
+    ...project.file.markers.filter((item) => item.datasetId !== datasetId),
+    ...markers.map((marker) => toProjectMarkerRef(datasetId, marker))
+  ]
+  projectService.markDirty()
+  void logger.write('INFO', logMessage, 'main', {
+    datasetId,
+    count: markers.length
+  })
+  return info
 }
 
 function parseContent(content: string, filePath: string, format: SourceFormat): Dataset {

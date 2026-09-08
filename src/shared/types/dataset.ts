@@ -9,14 +9,28 @@ export interface Channel {
   index: number
 }
 
+export const MARKER_TYPES = ['event', 'peak', 'interval', 'custom'] as const
+export type MarkerType = (typeof MARKER_TYPES)[number]
+
 export interface Marker {
   id: string
   name: string
+  type: MarkerType
   sampleIndex: number
   time: number
   channelId?: string
   color: string
   note: string
+}
+
+export interface MarkerDraft {
+  name: string
+  type?: MarkerType
+  sampleIndex?: number
+  time?: number
+  channelId?: string | null
+  color?: string
+  note?: string
 }
 
 export interface DatasetMetadata {

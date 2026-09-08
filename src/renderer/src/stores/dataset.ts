@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { filterDatasets } from '@shared/datasets/query'
-import type { ChannelStatistics, DatasetInfo, SourceFormat } from '@shared/types/dataset'
+import { nextMarkerName } from '@shared/markers/manage'
+import type { ChannelStatistics, DatasetInfo, MarkerDraft, SourceFormat } from '@shared/types/dataset'
 import { getErrorMessage } from '../utils/format'
 import { useAppStore } from './app'
 import { useProjectStore } from './project'
@@ -12,6 +13,7 @@ export const useDatasetStore = defineStore('dataset', () => {
   const statistics = ref<ChannelStatistics[]>([])
   const busy = ref(false)
   const search = ref('')
+  const focusSampleIndex = ref<number | null>(null)
 
   const selected = computed(
     () => datasets.value.find((item) => item.id === selectedId.value) ?? null
@@ -107,6 +109,73 @@ export const useDatasetStore = defineStore('dataset', () => {
     }
   }
 
+  async function addMarker(draft: MarkerDraft): Promise<void> {
+    const datasetId = selectedId.value
+    if (!datasetId) {
+      useAppStore().setGlobalError('请先选择一个数据集')
+      return
+    }
+    await runMarkerMutation(() => window.datascope.dataset.addMarker(datasetId, draft))
+  }
+
+  async function addMarkerAt(sampleIndex: number): Promise<void> {
+    const current = selected.value
+    if (!current) {
+      useAppStore().setGlobalError('请先选择一个数据集')
+      return
+    }
+    await addMarker({
+      name: nextMarkerName(current.markers),
+      type: 'event',
+      sampleIndex
+    })
+    focusSampleIndex.value = sampleIndex
+  }
+
+  async function updateMarker(markerId: string, draft: MarkerDraft): Promise<void> {
+    const datasetId = selectedId.value
+    if (!datasetId) {
+      useAppStore().setGlobalError('请先选择一个数据集')
+      return
+    }
+    await runMarkerMutation(() => window.datascope.dataset.updateMarker(datasetId, markerId, draft))
+  }
+
+  async function removeMarker(markerId: string): Promise<void> {
+    const datasetId = selectedId.value
+    if (!datasetId) {
+      useAppStore().setGlobalError('请先选择一个数据集')
+      return
+    }
+    await runMarkerMutation(() => window.datascope.dataset.removeMarker(datasetId, markerId))
+  }
+
+  async function jumpToMarker(datasetId: string, sampleIndex: number): Promise<void> {
+    await select(datasetId)
+    focusSampleIndex.value = sampleIndex
+  }
+
+  function clearFocus(): void {
+    focusSampleIndex.value = null
+  }
+
+  async function runMarkerMutation(action: () => Promise<DatasetInfo>): Promise<void> {
+    busy.value = true
+    try {
+      const info = await action()
+      await useProjectStore().hydrate()
+      await refresh()
+      selectedId.value = info.id
+      useAppStore().setGlobalError(null)
+    } catch (error) {
+      const message = getErrorMessage(error)
+      useAppStore().setGlobalError(message)
+      await window.datascope.log.write({ level: 'ERROR', message })
+    } finally {
+      busy.value = false
+    }
+  }
+
   return {
     datasets,
     selectedId,
@@ -115,11 +184,18 @@ export const useDatasetStore = defineStore('dataset', () => {
     statistics,
     busy,
     search,
+    focusSampleIndex,
     refresh,
     select,
     importData,
     rename,
-    remove
+    remove,
+    addMarker,
+    addMarkerAt,
+    updateMarker,
+    removeMarker,
+    jumpToMarker,
+    clearFocus
   }
 })
 

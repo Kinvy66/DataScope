@@ -1,3 +1,5 @@
+import type { MarkerType } from './dataset'
+
 export type DataFileFormat = 'csv' | 'txt' | 'json'
 
 export interface ProjectSettings {
@@ -20,7 +22,12 @@ export interface ProjectMarkerRef {
   id: string
   datasetId: string
   name: string
+  type: MarkerType
+  sampleIndex: number
   time: number
+  channelId?: string
+  color: string
+  note: string
 }
 
 export interface ProjectFile {

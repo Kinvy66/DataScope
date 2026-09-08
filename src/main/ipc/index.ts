@@ -9,7 +9,7 @@ import type { CreateProjectInput, UpdateProjectInput } from '@shared/types/proje
 import type { AnalysisRequest } from '@shared/types/analysis'
 import type { SpectrumRequest } from '@shared/types/spectrum'
 import type { GeneratorRequest } from '@shared/types/generator'
-import type { SourceFormat, ViewportRequest } from '@shared/types/dataset'
+import type { MarkerDraft, SourceFormat, ViewportRequest } from '@shared/types/dataset'
 import { logger } from '../services/logger'
 import { settingsService } from '../services/settings'
 import { projectService } from '../services/project'
@@ -21,7 +21,10 @@ import {
   loadProjectDatasets,
   generateDataset,
   removeDataset,
-  renameDataset
+  renameDataset,
+  addMarker,
+  updateMarker,
+  removeMarker
 } from '../services/importer'
 
 let allowQuit = false
@@ -195,6 +198,24 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannel.DatasetGenerate, async (_event, request: GeneratorRequest) => {
     return wrap(() => generateDataset(request))
   })
+
+  ipcMain.handle(IpcChannel.DatasetAddMarker, async (_event, datasetId: string, draft: MarkerDraft) => {
+    return wrap(() => addMarker(datasetId, draft))
+  })
+
+  ipcMain.handle(
+    IpcChannel.DatasetUpdateMarker,
+    async (_event, datasetId: string, markerId: string, draft: MarkerDraft) => {
+      return wrap(() => updateMarker(datasetId, markerId, draft))
+    }
+  )
+
+  ipcMain.handle(
+    IpcChannel.DatasetRemoveMarker,
+    async (_event, datasetId: string, markerId: string) => {
+      return wrap(() => removeMarker(datasetId, markerId))
+    }
+  )
 }
 
 export function attachCloseGuard(window: BrowserWindow): void {

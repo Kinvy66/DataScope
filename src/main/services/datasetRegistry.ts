@@ -6,6 +6,7 @@ import type {
   ChannelStatistics,
   Dataset,
   DatasetInfo,
+  Marker,
   ViewportData,
   ViewportRequest
 } from '@shared/types/dataset'
@@ -29,6 +30,12 @@ class DatasetRegistry {
   rename(datasetId: string, name: string): DatasetInfo {
     const dataset = this.get(datasetId)
     dataset.name = name
+    return toDatasetInfo(dataset)
+  }
+
+  setMarkers(datasetId: string, markers: Marker[]): DatasetInfo {
+    const dataset = this.get(datasetId)
+    dataset.markers = markers
     return toDatasetInfo(dataset)
   }
 

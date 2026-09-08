@@ -11,6 +11,7 @@ import {
 } from '@shared/types/project'
 import { PROJECT_FILE_NAME, PROJECT_SCHEMA_VERSION } from '@shared/constants'
 import { DataScopeError } from '@shared/errors'
+import { normalizeProjectMarkerRef } from '@shared/markers/manage'
 import { logger } from './logger'
 import { settingsService } from './settings'
 import { datasetRegistry } from './datasetRegistry'
@@ -241,7 +242,9 @@ function validateProjectFile(value: unknown): ProjectFile {
     sampleRate: Number(candidate.sampleRate),
     channelCount: Number(candidate.channelCount),
     dataFiles: candidate.dataFiles,
-    markers: candidate.markers,
+    markers: candidate.markers
+      .map((item) => normalizeProjectMarkerRef(item))
+      .filter((item): item is NonNullable<typeof item> => item !== null),
     settings: {
       ...DEFAULT_PROJECT_SETTINGS,
       ...(candidate.settings ?? {})

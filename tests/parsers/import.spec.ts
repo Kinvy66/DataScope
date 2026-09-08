@@ -91,6 +91,33 @@ describe('parseCSV', () => {
     expect(Array.isArray(dataset.samples[0])).toBe(true)
     expect(dataset.samples[0].length).toBe(rows)
   })
+
+  it('imports PERG datetime timestamps from the local research dataset', () => {
+    const dataset = parseCSV(fixture('csv', 'datetime-perg.csv'), 'datetime-perg.csv')
+    expect(dataset.channelCount).toBe(2)
+    expect(dataset.channels.map((channel) => channel.name)).toEqual(['RE_1', 'LE_1'])
+    expect(dataset.sampleCount).toBe(12)
+    expect(dataset.sampleRate).toBeCloseTo(1 / 0.0006, 0)
+    expect(dataset.samples[0][1]).toBeCloseTo(-0.1)
+    validateDataset(dataset)
+  })
+
+  it('imports the full PERG sample copied from dataset/', () => {
+    const content = readFileSync(join(__dirname, '..', '..', 'samples', 'perg-ioba-0001.csv'), 'utf8')
+    const dataset = parseCSV(content, 'perg-ioba-0001.csv')
+    expect(dataset.sampleCount).toBe(255)
+    expect(dataset.channelCount).toBe(2)
+    validateDataset(dataset)
+  })
+
+  it('rejects an unreadable timestamp cell', () => {
+    try {
+      parseCSV('timestamp,ch1\nnot-a-time,1\n')
+      throw new Error('expected failure')
+    } catch (error) {
+      expect((error as DataScopeError).code).toBe('INVALID_TIMESTAMP')
+    }
+  })
 })
 
 describe('parseTXT', () => {

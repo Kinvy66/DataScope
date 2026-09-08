@@ -9,6 +9,7 @@ import {
   splitDelimitedLine,
   type ParsedTable
 } from './common'
+import { parseTimestampCell } from './timestamp'
 
 export function parseCSV(content: string, sourcePath = 'memory.csv'): Dataset {
   return parseDelimited(content, sourcePath, 'csv')
@@ -74,7 +75,7 @@ function parseDelimited(
       )
     }
 
-    timestamps.push(parseNumericCell(cells[0], rowNumber, 1))
+    timestamps.push(parseTimestampCell(cells[0], rowNumber, 1))
     for (let column = 1; column < cells.length; column += 1) {
       columns[column - 1].push(parseNumericCell(cells[column], rowNumber, column + 1))
     }

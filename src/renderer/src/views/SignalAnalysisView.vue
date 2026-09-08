@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAnalysisStore } from '../stores/analysis'
 import { useDatasetStore } from '../stores/dataset'
 import { useProjectStore } from '../stores/project'
+import { elapsedSeconds } from '@shared/markers/manage'
 import { formatDuration, formatNumber, formatPath, formatTimestamp } from '../utils/format'
 
 const router = useRouter()
@@ -15,7 +16,7 @@ const dataset = computed(() => datasetStore.selected)
 
 function indexToTime(index: number): number {
   if (!dataset.value) return 0
-  return dataset.value.startTime + index / dataset.value.sampleRate
+  return elapsedSeconds(dataset.value.sampleRate, index)
 }
 
 const windowLabel = computed(() => {

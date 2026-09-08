@@ -14,8 +14,8 @@
 | 4 | [Phase 4 波形可视化](./Phase%204%20波形可视化%20Prompt.md) | 已完成 | Canvas 波形、降采样、光标 |
 | 5 | [Phase 5 时域信号分析](./Phase%205%20时域信号分析%20Prompt.md) | 已完成 | 统计量、analysis JSON |
 | 6 | [Phase 6 频谱分析](./Phase%206%20频谱分析%20Prompt.md) | 已完成 | FFT、幅度/功率谱 |
-| 7 | [Phase 7 Marker 管理](./Phase%207%20Marker%20管理%20Prompt.md) | 未开始 | Marker CRUD 与波形联动 |
-| 8A | [Phase 8A 数据发生器](./Phase%208A%20数据发生器%20Prompt.md) | 本阶段实现 | 离线合成波形写入工程 |
+| 7 | [Phase 7 Marker 管理](./Phase%207%20Marker%20管理%20Prompt.md) | 已完成 | Marker CRUD 与波形联动 |
+| 8A | [Phase 8A 数据发生器](./Phase%208A%20数据发生器%20Prompt.md) | 已完成 | 离线合成波形写入工程 |
 | 8B | [Phase 8B 实时监视](./Phase%208B%20实时监视%20Prompt.md) | 未开始 | Virtual DAQ、Live Monitor |
 | 9 | [Phase 9 任务系统](./Phase%209%20任务系统%20Prompt.md) | 未开始 | 后台任务进度与取消 |
 | 10 | [Phase 10 数据导出](./Phase%2010%20数据导出%20Prompt.md) | 未开始 | CSV / JSON / 二进制导出 |

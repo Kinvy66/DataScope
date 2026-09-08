@@ -1,6 +1,6 @@
 # DataScope
 
-DataScope 是一个用于软件测试学习的多通道时序数据桌面软件。当前版本覆盖 Phase 1–6 与 8A：基础框架、工程管理、数据导入、波形可视化、时域分析、频谱分析、离线数据发生器。
+DataScope 是一个用于软件测试学习的多通道时序数据桌面软件。当前版本覆盖 Phase 1–7 与 8A：基础框架、工程管理、数据导入、波形可视化、时域分析、频谱分析、Marker、离线数据发生器。
 
 使用手册（中文，含阶段标注）：[`docs/wiki/README.md`](docs/wiki/README.md)
 
@@ -53,6 +53,8 @@ timestamp,ch1,ch2,ch3
 0.001,1.3,2.2,3.5
 ```
 
+第一列也可以是 `YYYY-MM-DD HH:mm:ss.frac` 日期时间（例如 `samples/perg-ioba-0001.csv`）。
+
 JSON 支持行主序 `[timestamp, ch1, ...]` 或通道主序 `samples[channel][sample]`。
 
 ## 架构
@@ -66,3 +68,5 @@ JSON 支持行主序 `[timestamp, ch1, ...]` 或通道主序 `samples[channel][s
 分析路径：`Dataset → 通道/区间选择 → Time-domain Statistics / FFT Spectrum → analysis/*.json`
 
 发生器路径：`参数 → 合成波形 → data/*.json → Dataset 列表`
+
+Marker 路径：`表单 / Cursor → shared/markers → project.json → 波形竖线`

@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import WaveformViewer from '../components/waveform/WaveformViewer.vue'
+import { MARKER_TYPE_LABELS, elapsedSeconds } from '@shared/markers/manage'
 import { useDatasetStore } from '../stores/dataset'
 import { useProjectStore } from '../stores/project'
 import { formatDuration, formatNumber, formatTimestamp } from '../utils/format'
+
+const router = useRouter()
 
 const datasetStore = useDatasetStore()
 const projectStore = useProjectStore()
@@ -164,21 +168,34 @@ async function confirmDelete(): Promise<void> {
             <thead>
               <tr>
                 <th>名称</th>
+                <th>类型</th>
                 <th>采样点</th>
-                <th>时间</th>
+                <th>相对时间</th>
                 <th>备注</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="marker in datasetStore.selected.markers" :key="marker.id">
-                <td>{{ marker.name }}</td>
+              <tr
+                v-for="marker in datasetStore.selected.markers"
+                :key="marker.id"
+                class="clickable"
+                @click="datasetStore.jumpToMarker(datasetStore.selected.id, marker.sampleIndex)"
+              >
+                <td>
+                  <span class="dot" :style="{ background: marker.color }"></span>
+                  {{ marker.name }}
+                </td>
+                <td>{{ MARKER_TYPE_LABELS[marker.type] }}</td>
                 <td>{{ marker.sampleIndex }}</td>
-                <td>{{ formatNumber(marker.time, 6) }} s</td>
+                <td>{{ formatNumber(elapsedSeconds(datasetStore.selected.sampleRate, marker.sampleIndex), 6) }} s</td>
                 <td>{{ marker.note || '—' }}</td>
               </tr>
             </tbody>
           </table>
-          <p v-else class="muted">当前数据集没有 Marker。Marker 管理将在后续阶段实现。</p>
+          <p v-else class="muted">当前数据集没有 Marker。可在波形工具栏从 Cursor A 添加，或打开 Marker 管理页。</p>
+          <div class="row">
+            <button class="btn" type="button" @click="router.push('/markers')">打开 Marker 管理</button>
+          </div>
         </article>
 
         <article v-if="datasetStore.statistics.length" class="panel info wide">
@@ -213,7 +230,13 @@ async function confirmDelete(): Promise<void> {
       </div>
     </div>
 
-    <WaveformViewer v-if="datasetStore.selected" :dataset="datasetStore.selected" />
+    <WaveformViewer
+      v-if="datasetStore.selected"
+      :dataset="datasetStore.selected"
+      :focus-sample-index="datasetStore.focusSampleIndex"
+      @add-at="datasetStore.addMarkerAt"
+      @focused="datasetStore.clearFocus"
+    />
 
     <ConfirmDialog
       v-if="pendingDelete"
@@ -330,6 +353,11 @@ dd {
   width: 10px;
   height: 10px;
   border-radius: 50%;
+  margin-right: 6px;
+}
+
+.clickable {
+  cursor: pointer;
 }
 
 h2 {

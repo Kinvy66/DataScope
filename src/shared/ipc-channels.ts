@@ -33,7 +33,10 @@ export const IpcChannel = {
   DatasetRemove: 'dataset:remove',
   DatasetAnalyze: 'dataset:analyze',
   DatasetAnalyzeSpectrum: 'dataset:analyzeSpectrum',
-  DatasetGenerate: 'dataset:generate'
+  DatasetGenerate: 'dataset:generate',
+  DatasetAddMarker: 'dataset:addMarker',
+  DatasetUpdateMarker: 'dataset:updateMarker',
+  DatasetRemoveMarker: 'dataset:removeMarker'
 } as const
 
 export type IpcChannelName = (typeof IpcChannel)[keyof typeof IpcChannel]

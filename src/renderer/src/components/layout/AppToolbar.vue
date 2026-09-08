@@ -46,6 +46,9 @@ function toggleTheme(): void {
     <button class="btn btn-ghost" type="button" :class="{ on: route.path === '/generator' }" @click="router.push('/generator')">
       发生器
     </button>
+    <button class="btn btn-ghost" type="button" :class="{ on: route.path === '/markers' }" @click="router.push('/markers')">
+      Marker
+    </button>
     <button class="btn" type="button" @click="toggleTheme">
       {{ appStore.settings.theme === 'dark' ? '浅色主题' : '深色主题' }}
     </button>

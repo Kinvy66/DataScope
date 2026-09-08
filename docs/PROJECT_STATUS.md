@@ -8,8 +8,8 @@
 | 分支 | `master` |
 | 进度基准 | 以本文件所在 commit 为准 |
 | 产品阶段 | V1.0 Clean（禁止故意注入缺陷） |
-| 已完成 | Phase 1–6、8A：框架、工程、导入、波形、时域分析、频谱分析、离线数据发生器 |
-| 建议下一阶段 | Marker 管理（数据模型已有，UI 未做） |
+| 已完成 | Phase 1–7、8A：框架、工程、导入、波形、时域分析、频谱分析、Marker、离线数据发生器 |
+| 建议下一阶段 | 数字滤波，或 Live Monitor / Virtual DAQ（8B） |
 
 使用手册：[`docs/wiki/README.md`](./wiki/README.md)  
 开发任务书：[`docs/dev_plan/README.md`](./dev_plan/README.md)
@@ -20,11 +20,11 @@
 | --- | --- | --- | --- |
 | 1 | 基础框架 | 已完成 | Electron + Vue 3 壳、布局、路由、主题、日志、应用图标 |
 | 2 | 工程管理 | 已完成 | 新建 / 打开 / 保存 / 另存 / 关闭、未保存拦截、最近工程 |
-| 3 | 数据导入 | 已完成 | CSV / TXT / JSON 解析、工程 `data/` 落地、数据集注册 |
-| 4 | 波形可视化 | 已完成 | Canvas 多通道波形、viewport 降采样、光标、缩放平移 |
+| 3 | 数据导入 | 已完成 | CSV / TXT / JSON 解析（含日期时间戳）、工程 `data/` 落地、数据集注册 |
+| 4 | 波形可视化 | 已完成 | Canvas 多通道波形、viewport 降采样、光标、缩放平移、Marker 叠加 |
 | 5 | 时域信号分析 | 已完成 | 通道/区间统计，结果写入 `analysis/*.json` |
 | 6 | 频谱分析 | 已完成 | Radix-2 FFT、窗函数、幅度/功率谱、峰值频率、Canvas 频谱图 |
-| 7 | Marker | 未开始 | Dataset / Project 含 `markers` 字段，无管理 UI |
+| 7 | Marker | 已完成 | 添加 / 编辑 / 删除，写入 `project.json`，与波形跳转联动 |
 | 8A | 数据发生器 | 已完成 | 离线合成波形并写入工程 JSON |
 | 8B | 实时数据 / Virtual DAQ | 未开始 | `Live Monitor` 仍为占位页 |
 | 9 | 任务系统 | 未开始 | `Task Manager` 占位 |
@@ -32,7 +32,7 @@
 | 11 | 设置系统 | 部分完成 | 主题与日志级别可用；无完整 i18n |
 | 12 | 测试支持 / E2E | 部分完成 | 有 Vitest 单测与 fixtures；无 Playwright / Electron E2E |
 
-占位页（`PhasePage.vue`，不算已实现）：实时监视、Marker 管理、任务管理。
+占位页（`PhasePage.vue`，不算已实现）：实时监视、任务管理。
 
 信号处理中的 **数字滤波** 尚未开始，不要与已完成的 FFT 频谱混为一谈。
 
@@ -54,15 +54,18 @@
 
 ### Phase 3 数据导入
 
-- 格式：CSV / TXT（表头 `timestamp,ch1,...`）、JSON 行主序或通道主序
+- 格式：CSV / TXT（表头 `timestamp,ch1,...` 或 `TIME_1,RE_1,...`）、JSON 行主序或通道主序
+- 时间戳：数字秒，或 `YYYY-MM-DD HH:mm:ss.frac` 日期时间（用于 PERG 等生理信号 CSV）
 - 校验：空文件、缺表头、列不一致、非数字、NaN/Infinity、非法时间戳、中文路径等
 - 数据浏览：列表、搜索、重命名、删除、通道统计
+- 本地研究数据目录 `dataset/` 默认不入库（体积大）；可导入的 PERG 样例见 `samples/perg-ioba-0001.csv`
 
 ### Phase 4 波形可视化
 
 - 路径：`Dataset → Viewport → Min-Max Downsampling → Canvas`
 - 通道显隐 / 重排、lane 预设、缩放、平移、Fit All、Auto Scale
 - Cursor A / B 与时间、幅值、差值读数
+- Marker 竖线叠加；可从 Cursor A 添加；列表点击跳转
 - 渲染进程不拉取完整 `samples`
 
 ### Phase 5 时域信号分析
@@ -75,6 +78,13 @@
 
 - 算法：`src/shared/algorithms/fft.ts`
 - IPC `dataset:analyzeSpectrum`；`SpectrumAnalysisView` + `SpectrumPlot`
+
+### Phase 7 Marker 管理
+
+- 算法：`src/shared/markers/manage.ts`（校验采样点、时间换算、排序、project.json 往返）
+- IPC `dataset:addMarker` / `updateMarker` / `removeMarker`，持久化到 `project.json`
+- 页面：`MarkerManagerView`；波形与数据浏览可跳转 / 添加
+- 单测：`tests/markers/manage.spec.ts`
 
 ### Phase 8A 数据发生器
 
@@ -95,8 +105,9 @@
 - `tests/analysis/timeDomain.spec.ts`
 - `tests/analysis/spectrum.spec.ts`
 - `tests/generators/waveform.spec.ts`
+- `tests/markers/manage.spec.ts`
 
-fixtures：`tests/fixtures/csv/*`、`tests/fixtures/json/normal.json`；示例数据：`samples/`。
+fixtures：`tests/fixtures/csv/*`、`tests/fixtures/json/normal.json`；示例数据：`samples/`（含 `perg-ioba-0001.csv`）。
 
 阶段结束后应实际执行：
 
@@ -109,9 +120,7 @@ npm run build
 
 ## 建议下一阶段
 
-**Marker 管理**：在已有 `Dataset.markers` 上提供添加、编辑、删除、与波形跳转。不要顺手做实时采集或导出。
-
-数字滤波可作为独立增量。
+**数字滤波**（高通 / 低通 / 带通 / 陷波）或 **Live Monitor / Virtual DAQ（8B）**。滤波与已完成的 FFT 频谱分开做。不要顺手做导出或任务系统。
 
 ## 维护规则
 

@@ -6,6 +6,7 @@ import SpectrumPlot from '../components/spectrum/SpectrumPlot.vue'
 import { useDatasetStore } from '../stores/dataset'
 import { useProjectStore } from '../stores/project'
 import { useSpectrumStore } from '../stores/spectrum'
+import { elapsedSeconds } from '@shared/markers/manage'
 import { formatNumber, formatPath, formatTimestamp } from '../utils/format'
 
 const router = useRouter()
@@ -17,7 +18,7 @@ const dataset = computed(() => datasetStore.selected)
 
 function indexToTime(index: number): number {
   if (!dataset.value) return 0
-  return dataset.value.startTime + index / dataset.value.sampleRate
+  return elapsedSeconds(dataset.value.sampleRate, index)
 }
 
 const windowLabel = computed(() => {

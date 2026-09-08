@@ -12,6 +12,7 @@ import type { GeneratorRequest } from './generator'
 import type {
   ChannelStatistics,
   DatasetInfo,
+  MarkerDraft,
   SourceFormat,
   ViewportData,
   ViewportRequest
@@ -64,6 +65,9 @@ export interface DataScopeAPI {
     analyze: (request: AnalysisRequest) => Promise<AnalysisResult>
     analyzeSpectrum: (request: SpectrumRequest) => Promise<SpectrumResult>
     generate: (request: GeneratorRequest) => Promise<DatasetInfo>
+    addMarker: (datasetId: string, draft: MarkerDraft) => Promise<DatasetInfo>
+    updateMarker: (datasetId: string, markerId: string, draft: MarkerDraft) => Promise<DatasetInfo>
+    removeMarker: (datasetId: string, markerId: string) => Promise<DatasetInfo>
   }
 }
 

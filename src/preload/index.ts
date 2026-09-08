@@ -7,7 +7,7 @@ import type { CreateProjectInput, UpdateProjectInput } from '@shared/types/proje
 import type { AnalysisRequest } from '@shared/types/analysis'
 import type { SpectrumRequest } from '@shared/types/spectrum'
 import type { GeneratorRequest } from '@shared/types/generator'
-import type { SourceFormat, ViewportRequest } from '@shared/types/dataset'
+import type { MarkerDraft, SourceFormat, ViewportRequest } from '@shared/types/dataset'
 
 const api: DataScopeAPI = {
   app: {
@@ -59,7 +59,13 @@ const api: DataScopeAPI = {
     analyze: (request: AnalysisRequest) => ipcRenderer.invoke(IpcChannel.DatasetAnalyze, request),
     analyzeSpectrum: (request: SpectrumRequest) =>
       ipcRenderer.invoke(IpcChannel.DatasetAnalyzeSpectrum, request),
-    generate: (request: GeneratorRequest) => ipcRenderer.invoke(IpcChannel.DatasetGenerate, request)
+    generate: (request: GeneratorRequest) => ipcRenderer.invoke(IpcChannel.DatasetGenerate, request),
+    addMarker: (datasetId: string, draft: MarkerDraft) =>
+      ipcRenderer.invoke(IpcChannel.DatasetAddMarker, datasetId, draft),
+    updateMarker: (datasetId: string, markerId: string, draft: MarkerDraft) =>
+      ipcRenderer.invoke(IpcChannel.DatasetUpdateMarker, datasetId, markerId, draft),
+    removeMarker: (datasetId: string, markerId: string) =>
+      ipcRenderer.invoke(IpcChannel.DatasetRemoveMarker, datasetId, markerId)
   }
 }
 

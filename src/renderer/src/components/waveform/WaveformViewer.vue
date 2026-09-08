@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { CHANNEL_PRESETS } from '@shared/constants'
-import type { Channel, DatasetInfo, ViewportData } from '@shared/types/dataset'
+import type { Channel, DatasetInfo, Marker, ViewportData } from '@shared/types/dataset'
+import { elapsedSeconds } from '@shared/markers/manage'
 import { formatNumber } from '../../utils/format'
 
 const props = defineProps<{
   dataset: DatasetInfo
+  focusSampleIndex?: number | null
+}>()
+
+const emit = defineEmits<{
+  'add-at': [sampleIndex: number]
+  focused: []
 }>()
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
@@ -59,6 +66,10 @@ let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
   resetView()
+  if (props.focusSampleIndex !== null && props.focusSampleIndex !== undefined) {
+    centerOn(props.focusSampleIndex)
+    emit('focused')
+  }
   resizeObserver = new ResizeObserver(() => {
     void fetchAndDraw()
   })
@@ -76,6 +87,23 @@ watch(
   () => props.dataset.id,
   () => {
     resetView()
+  }
+)
+
+watch(
+  () => props.dataset.markers,
+  () => {
+    draw()
+  },
+  { deep: true }
+)
+
+watch(
+  () => props.focusSampleIndex,
+  (index) => {
+    if (index === null || index === undefined) return
+    centerOn(index)
+    emit('focused')
   }
 )
 
@@ -139,8 +167,25 @@ function fitAll(): void {
   autoScale.value = true
 }
 
+function centerOn(index: number): void {
+  const clamped = Math.min(Math.max(index, 0), Math.max(props.dataset.sampleCount - 1, 0))
+  const span = Math.max(endIndex.value - startIndex.value, 64)
+  let nextStart = clamped - span / 2
+  let nextEnd = clamped + span / 2
+  if (nextStart < 0) {
+    nextEnd -= nextStart
+    nextStart = 0
+  }
+  if (nextEnd > props.dataset.sampleCount - 1) {
+    nextStart -= nextEnd - (props.dataset.sampleCount - 1)
+    nextEnd = props.dataset.sampleCount - 1
+  }
+  startIndex.value = Math.max(0, Math.floor(nextStart))
+  endIndex.value = Math.max(startIndex.value + 1, Math.ceil(nextEnd))
+}
+
 function indexToTime(index: number): number {
-  return props.dataset.startTime + index / props.dataset.sampleRate
+  return elapsedSeconds(props.dataset.sampleRate, index)
 }
 
 function sampleValuesAt(index: number): Array<{ channel: Channel; value: number }> {
@@ -297,6 +342,9 @@ function draw(): void {
 
   drawCursor(ctx, cursorA.value, accent, 'A', plotLeft, plotWidth, plotTop, plotHeight)
   drawCursor(ctx, cursorB.value, '#ffd166', 'B', plotLeft, plotWidth, plotTop, plotHeight)
+  props.dataset.markers.forEach((marker) => {
+    drawMarker(ctx, marker, plotLeft, plotWidth, plotTop, plotHeight)
+  })
 
   if (hoverX.value !== null) {
     ctx.strokeStyle = 'rgba(255,255,255,0.25)'
@@ -307,6 +355,32 @@ function draw(): void {
     ctx.stroke()
     ctx.setLineDash([])
   }
+}
+
+function drawMarker(
+  ctx: CanvasRenderingContext2D,
+  marker: Marker,
+  plotLeft: number,
+  plotWidth: number,
+  plotTop: number,
+  plotHeight: number
+): void {
+  const ratio =
+    endIndex.value === startIndex.value
+      ? 0
+      : (marker.sampleIndex - startIndex.value) / (endIndex.value - startIndex.value)
+  if (ratio < 0 || ratio > 1) return
+  const x = plotLeft + ratio * plotWidth
+  ctx.strokeStyle = marker.color
+  ctx.setLineDash([3, 4])
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(x, plotTop)
+  ctx.lineTo(x, plotTop + plotHeight)
+  ctx.stroke()
+  ctx.setLineDash([])
+  ctx.fillStyle = marker.color
+  ctx.fillText(marker.name, x + 4, plotTop + plotHeight - 6)
 }
 
 function drawCursor(
@@ -420,6 +494,11 @@ function clearCursors(): void {
   cursorMode.value = 'a'
   draw()
 }
+
+function addMarkerAtCursor(): void {
+  const index = cursorA.value ?? Math.round((startIndex.value + endIndex.value) / 2)
+  emit('add-at', index)
+}
 </script>
 
 <template>
@@ -438,6 +517,7 @@ function clearCursors(): void {
       <button class="btn" type="button" :class="{ on: cursorMode === 'a' }" @click="cursorMode = 'a'">Cursor A</button>
       <button class="btn" type="button" :class="{ on: cursorMode === 'b' }" @click="cursorMode = 'b'">Cursor B</button>
       <button class="btn btn-ghost" type="button" @click="clearCursors">清除 Cursor</button>
+      <button class="btn btn-primary" type="button" @click="addMarkerAtCursor">从 Cursor A 添加 Marker</button>
     </div>
     <div class="wave-body">
       <aside class="channels">
@@ -491,6 +571,18 @@ function clearCursors(): void {
           </div>
         </div>
         <p class="hint">滚轮缩放，Shift+拖动平移，点击放置 Cursor。</p>
+        <div class="kicker">Markers</div>
+        <button
+          v-for="marker in dataset.markers"
+          :key="marker.id"
+          class="marker-jump"
+          type="button"
+          @click="centerOn(marker.sampleIndex)"
+        >
+          <span class="dot" :style="{ background: marker.color }"></span>
+          {{ marker.name }} · {{ marker.sampleIndex }}
+        </button>
+        <p v-if="dataset.markers.length === 0" class="hint">还没有 Marker。</p>
       </aside>
     </div>
   </section>
@@ -609,5 +701,26 @@ canvas {
 .on {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.marker-jump {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-alt);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
 }
 </style>
