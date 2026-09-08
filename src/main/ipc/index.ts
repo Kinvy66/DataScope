@@ -11,7 +11,13 @@ import { logger } from '../services/logger'
 import { settingsService } from '../services/settings'
 import { projectService } from '../services/project'
 import { datasetRegistry } from '../services/datasetRegistry'
-import { importDataset, inferFormatFromPath, loadProjectDatasets, removeDataset } from '../services/importer'
+import {
+  importDataset,
+  inferFormatFromPath,
+  loadProjectDatasets,
+  removeDataset,
+  renameDataset
+} from '../services/importer'
 
 let allowQuit = false
 
@@ -163,6 +169,10 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.DatasetGetViewport, async (_event, request: ViewportRequest) => {
     return wrap(() => datasetRegistry.getViewport(request))
+  })
+
+  ipcMain.handle(IpcChannel.DatasetRename, async (_event, datasetId: string, name: string) => {
+    return wrap(() => renameDataset(datasetId, name))
   })
 
   ipcMain.handle(IpcChannel.DatasetRemove, async (_event, datasetId: string) => {

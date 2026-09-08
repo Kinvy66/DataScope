@@ -1,11 +1,48 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
+import ConfirmDialog from '../components/common/ConfirmDialog.vue'
+import WaveformViewer from '../components/waveform/WaveformViewer.vue'
 import { useDatasetStore } from '../stores/dataset'
 import { useProjectStore } from '../stores/project'
-import WaveformViewer from '../components/waveform/WaveformViewer.vue'
 import { formatDuration, formatNumber, formatTimestamp } from '../utils/format'
 
 const datasetStore = useDatasetStore()
 const projectStore = useProjectStore()
+const renamingId = ref<string | null>(null)
+const renameDraft = ref('')
+const pendingDeleteId = ref<string | null>(null)
+
+const pendingDelete = computed(
+  () => datasetStore.datasets.find((item) => item.id === pendingDeleteId.value) ?? null
+)
+
+function startRename(id: string, current: string): void {
+  renamingId.value = id
+  renameDraft.value = current
+}
+
+async function commitRename(): Promise<void> {
+  if (!renamingId.value) return
+  const id = renamingId.value
+  const name = renameDraft.value
+  renamingId.value = null
+  await datasetStore.rename(id, name)
+}
+
+function cancelRename(): void {
+  renamingId.value = null
+}
+
+function requestDelete(id: string): void {
+  pendingDeleteId.value = id
+}
+
+async function confirmDelete(): Promise<void> {
+  const id = pendingDeleteId.value
+  pendingDeleteId.value = null
+  if (!id) return
+  await datasetStore.remove(id)
+}
 </script>
 
 <template>
@@ -13,7 +50,7 @@ const projectStore = useProjectStore()
     <header class="page-header">
       <div class="kicker">Data Browser</div>
       <h1>数据浏览</h1>
-      <p>查看已导入数据集、通道信息和统计，并在下方打开波形工作区。</p>
+      <p>查看已导入数据集、通道信息和 Marker，并在下方打开波形工作区。</p>
     </header>
 
     <div v-if="!projectStore.hasProject" class="panel empty-state">
@@ -28,8 +65,14 @@ const projectStore = useProjectStore()
             导入
           </button>
         </div>
+        <input
+          v-model="datasetStore.search"
+          class="search"
+          type="search"
+          placeholder="搜索名称、通道或格式"
+        />
         <button
-          v-for="item in datasetStore.datasets"
+          v-for="item in datasetStore.filtered"
           :key="item.id"
           class="file"
           :class="{ active: item.id === datasetStore.selectedId }"
@@ -37,16 +80,28 @@ const projectStore = useProjectStore()
           @click="datasetStore.select(item.id)"
         >
           <span>{{ item.name }}</span>
-          <small>{{ item.channelCount }} ch · {{ item.sampleCount.toLocaleString() }}</small>
+          <small>{{ item.channelCount }} ch · {{ item.sampleCount.toLocaleString() }} · {{ item.metadata.sourceFormat.toUpperCase() }}</small>
         </button>
         <p v-if="datasetStore.datasets.length === 0" class="muted">还没有导入数据。</p>
+        <p v-else-if="datasetStore.filtered.length === 0" class="muted">没有匹配的数据集。</p>
       </aside>
 
       <div class="detail">
         <article v-if="datasetStore.selected" class="panel info">
           <h2>数据集信息</h2>
           <dl>
-            <div><dt>名称</dt><dd>{{ datasetStore.selected.name }}</dd></div>
+            <div>
+              <dt>名称</dt>
+              <dd v-if="renamingId !== datasetStore.selected.id">{{ datasetStore.selected.name }}</dd>
+              <dd v-else>
+                <input
+                  v-model="renameDraft"
+                  class="rename-input"
+                  @keydown.enter.prevent="commitRename"
+                  @keydown.escape.prevent="cancelRename"
+                />
+              </dd>
+            </div>
             <div><dt>采样率</dt><dd>{{ formatNumber(datasetStore.selected.sampleRate, 3) }} Hz</dd></div>
             <div><dt>通道数</dt><dd>{{ datasetStore.selected.channelCount }}</dd></div>
             <div><dt>采样点数</dt><dd>{{ datasetStore.selected.sampleCount.toLocaleString() }}</dd></div>
@@ -55,6 +110,32 @@ const projectStore = useProjectStore()
             <div><dt>来源</dt><dd>{{ datasetStore.selected.metadata.sourceFormat.toUpperCase() }}</dd></div>
             <div><dt>导入时间</dt><dd>{{ formatTimestamp(datasetStore.selected.metadata.importedAt) }}</dd></div>
           </dl>
+          <div class="row">
+            <template v-if="renamingId === datasetStore.selected.id">
+              <button class="btn btn-primary" type="button" :disabled="datasetStore.busy" @click="commitRename">
+                保存名称
+              </button>
+              <button class="btn" type="button" @click="cancelRename">取消</button>
+            </template>
+            <template v-else>
+              <button
+                class="btn"
+                type="button"
+                :disabled="datasetStore.busy"
+                @click="startRename(datasetStore.selected.id, datasetStore.selected.name)"
+              >
+                重命名
+              </button>
+              <button
+                class="btn btn-danger"
+                type="button"
+                :disabled="datasetStore.busy"
+                @click="requestDelete(datasetStore.selected.id)"
+              >
+                删除
+              </button>
+            </template>
+          </div>
         </article>
 
         <article v-if="datasetStore.selected" class="panel info">
@@ -75,6 +156,29 @@ const projectStore = useProjectStore()
               </tr>
             </tbody>
           </table>
+        </article>
+
+        <article v-if="datasetStore.selected" class="panel info wide">
+          <h2>Marker</h2>
+          <table v-if="datasetStore.selected.markers.length" class="table">
+            <thead>
+              <tr>
+                <th>名称</th>
+                <th>采样点</th>
+                <th>时间</th>
+                <th>备注</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="marker in datasetStore.selected.markers" :key="marker.id">
+                <td>{{ marker.name }}</td>
+                <td>{{ marker.sampleIndex }}</td>
+                <td>{{ formatNumber(marker.time, 6) }} s</td>
+                <td>{{ marker.note || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p v-else class="muted">当前数据集没有 Marker。Marker 管理将在后续阶段实现。</p>
         </article>
 
         <article v-if="datasetStore.statistics.length" class="panel info wide">
@@ -106,6 +210,16 @@ const projectStore = useProjectStore()
     </div>
 
     <WaveformViewer v-if="datasetStore.selected" :dataset="datasetStore.selected" />
+
+    <ConfirmDialog
+      v-if="pendingDelete"
+      title="删除数据集"
+      :message="`确定删除数据集「${pendingDelete.name}」？工程中的副本文件也会被删除，此操作不可撤销。`"
+      confirm-label="删除"
+      danger
+      @confirm="confirmDelete"
+      @cancel="pendingDeleteId = null"
+    />
   </section>
 </template>
 
@@ -131,6 +245,16 @@ const projectStore = useProjectStore()
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+}
+
+.search {
+  width: 100%;
+  height: 32px;
+  margin-bottom: 8px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-app);
+  border-radius: 6px;
 }
 
 .file {
@@ -180,6 +304,21 @@ dt {
 
 dd {
   margin: 4px 0 0;
+}
+
+.rename-input {
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--accent);
+  background: var(--bg-app);
+  border-radius: 6px;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .dot {

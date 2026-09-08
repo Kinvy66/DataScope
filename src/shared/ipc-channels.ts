@@ -29,6 +29,7 @@ export const IpcChannel = {
   DatasetGetInfo: 'dataset:getInfo',
   DatasetGetStatistics: 'dataset:getStatistics',
   DatasetGetViewport: 'dataset:getViewport',
+  DatasetRename: 'dataset:rename',
   DatasetRemove: 'dataset:remove'
 } as const
 

@@ -26,6 +26,12 @@ class DatasetRegistry {
     this.datasets.delete(datasetId)
   }
 
+  rename(datasetId: string, name: string): DatasetInfo {
+    const dataset = this.get(datasetId)
+    dataset.name = name
+    return toDatasetInfo(dataset)
+  }
+
   get(datasetId: string): Dataset {
     const dataset = this.datasets.get(datasetId)
     if (!dataset) {

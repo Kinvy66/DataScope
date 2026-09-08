@@ -56,6 +56,7 @@ export interface DataScopeAPI {
     getInfo: (datasetId: string) => Promise<DatasetInfo>
     getStatistics: (datasetId: string) => Promise<ChannelStatistics[]>
     getViewport: (request: ViewportRequest) => Promise<ViewportData>
+    rename: (datasetId: string, name: string) => Promise<DatasetInfo>
     remove: (datasetId: string) => Promise<void>
   }
 }

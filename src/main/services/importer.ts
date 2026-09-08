@@ -1,10 +1,11 @@
-import { copyFile, mkdir, readFile, stat } from 'node:fs/promises'
+import { copyFile, mkdir, readFile, stat, unlink } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import { existsSync } from 'node:fs'
 import { LARGE_DATASET_THRESHOLD } from '@shared/constants'
 import { DataScopeError } from '@shared/errors'
 import { parseCSV, parseTXT } from '@shared/parsers/csv'
 import { parseJSON } from '@shared/parsers/json'
+import { validateDatasetName } from '@shared/datasets/query'
 import { validateDataset } from '@shared/parsers/dataset'
 import type { Dataset, DatasetInfo, SourceFormat } from '@shared/types/dataset'
 import type { DataFileRef } from '@shared/types/project'
@@ -108,14 +109,38 @@ export async function loadProjectDatasets(): Promise<DatasetInfo[]> {
   return loaded
 }
 
+export async function renameDataset(datasetId: string, name: string): Promise<DatasetInfo> {
+  const project = projectService.requireOpen()
+  const normalized = validateDatasetName(name)
+  const info = datasetRegistry.rename(datasetId, normalized)
+  const ref = project.file.dataFiles.find((item) => item.id === datasetId)
+  if (ref) {
+    ref.name = normalized
+  }
+  projectService.markDirty()
+  await logger.write('INFO', 'Dataset renamed', 'main', { id: datasetId, name: normalized })
+  return info
+}
+
 export async function removeDataset(datasetId: string): Promise<void> {
   const project = projectService.requireOpen()
+  const ref = project.file.dataFiles.find((item) => item.id === datasetId)
   datasetRegistry.remove(datasetId)
   project.file.dataFiles = project.file.dataFiles.filter((item) => item.id !== datasetId)
   project.file.channelCount = project.file.dataFiles.reduce(
     (max, item) => Math.max(max, item.channelCount),
     0
   )
+  if (ref) {
+    const absolutePath = join(project.rootPath, ref.relativePath)
+    try {
+      if (existsSync(absolutePath)) {
+        await unlink(absolutePath)
+      }
+    } catch {
+      await logger.write('WARNING', 'Failed to delete dataset file', 'main', { path: absolutePath })
+    }
+  }
   projectService.markDirty()
   await logger.write('INFO', 'Dataset removed', 'main', { id: datasetId })
 }

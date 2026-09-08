@@ -50,6 +50,8 @@ const api: DataScopeAPI = {
     getInfo: (datasetId: string) => ipcRenderer.invoke(IpcChannel.DatasetGetInfo, datasetId),
     getStatistics: (datasetId: string) => ipcRenderer.invoke(IpcChannel.DatasetGetStatistics, datasetId),
     getViewport: (request: ViewportRequest) => ipcRenderer.invoke(IpcChannel.DatasetGetViewport, request),
+    rename: (datasetId: string, name: string) =>
+      ipcRenderer.invoke(IpcChannel.DatasetRename, datasetId, name),
     remove: (datasetId: string) => ipcRenderer.invoke(IpcChannel.DatasetRemove, datasetId)
   }
 }
