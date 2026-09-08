@@ -40,6 +40,9 @@ const datasetStore = useDatasetStore()
         <div class="row">
           <button class="btn btn-primary" type="button" @click="datasetStore.importData()">导入数据</button>
           <button class="btn" type="button" @click="router.push('/data')">打开数据浏览</button>
+          <button class="btn" type="button" :disabled="!datasetStore.selected" @click="router.push('/signal')">
+            信号分析
+          </button>
         </div>
       </article>
     </div>

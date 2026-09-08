@@ -6,10 +6,12 @@ import type { AppInfo } from '@shared/types/app'
 import type { AppSettings } from '@shared/types/settings'
 import type { LogQuery, LogWritePayload } from '@shared/types/log'
 import type { CreateProjectInput, UpdateProjectInput } from '@shared/types/project'
+import type { AnalysisRequest } from '@shared/types/analysis'
 import type { SourceFormat, ViewportRequest } from '@shared/types/dataset'
 import { logger } from '../services/logger'
 import { settingsService } from '../services/settings'
 import { projectService } from '../services/project'
+import { runTimeDomainAnalysis } from '../services/analysis'
 import { datasetRegistry } from '../services/datasetRegistry'
 import {
   importDataset,
@@ -177,6 +179,10 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.DatasetRemove, async (_event, datasetId: string) => {
     return wrap(() => removeDataset(datasetId))
+  })
+
+  ipcMain.handle(IpcChannel.DatasetAnalyze, async (_event, request: AnalysisRequest) => {
+    return wrap(() => runTimeDomainAnalysis(request))
   })
 }
 

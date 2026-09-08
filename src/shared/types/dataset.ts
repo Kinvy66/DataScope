@@ -59,8 +59,11 @@ export interface ChannelStatistics {
   min: number
   max: number
   mean: number
+  median: number
   rms: number
+  stdDev: number
   peakToPeak: number
+  sampleCount: number
 }
 
 export interface ViewportRequest {

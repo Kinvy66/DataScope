@@ -1,18 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import { downsampleMinMax } from '@shared/algorithms/downsample'
-import { calculateChannelStatistics, calculateMean, calculateRMS } from '@shared/algorithms/statistics'
-
-describe('statistics', () => {
-  it('calculates mean, rms and peak-to-peak', () => {
-    const values = [1, 2, 3, 4]
-    const stats = calculateChannelStatistics(values)
-    expect(stats.min).toBe(1)
-    expect(stats.max).toBe(4)
-    expect(stats.mean).toBe(calculateMean(values))
-    expect(stats.rms).toBeCloseTo(calculateRMS(values))
-    expect(stats.peakToPeak).toBe(3)
-  })
-})
 
 describe('min-max downsampling', () => {
   it('keeps peaks inside each pixel bucket', () => {

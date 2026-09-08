@@ -6,6 +6,7 @@ import type {
   ProjectState,
   UpdateProjectInput
 } from './project'
+import type { AnalysisRequest, AnalysisResult } from './analysis'
 import type {
   ChannelStatistics,
   DatasetInfo,
@@ -58,6 +59,7 @@ export interface DataScopeAPI {
     getViewport: (request: ViewportRequest) => Promise<ViewportData>
     rename: (datasetId: string, name: string) => Promise<DatasetInfo>
     remove: (datasetId: string) => Promise<void>
+    analyze: (request: AnalysisRequest) => Promise<AnalysisResult>
   }
 }
 

@@ -190,7 +190,9 @@ async function confirmDelete(): Promise<void> {
                 <th>Min</th>
                 <th>Max</th>
                 <th>Mean</th>
+                <th>Median</th>
                 <th>RMS</th>
+                <th>StdDev</th>
                 <th>Peak-Peak</th>
               </tr>
             </thead>
@@ -200,7 +202,9 @@ async function confirmDelete(): Promise<void> {
                 <td>{{ formatNumber(row.min) }}</td>
                 <td>{{ formatNumber(row.max) }}</td>
                 <td>{{ formatNumber(row.mean) }}</td>
+                <td>{{ formatNumber(row.median) }}</td>
                 <td>{{ formatNumber(row.rms) }}</td>
+                <td>{{ formatNumber(row.stdDev) }}</td>
                 <td>{{ formatNumber(row.peakToPeak) }}</td>
               </tr>
             </tbody>
