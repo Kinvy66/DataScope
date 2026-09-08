@@ -31,7 +31,8 @@ export const IpcChannel = {
   DatasetGetViewport: 'dataset:getViewport',
   DatasetRename: 'dataset:rename',
   DatasetRemove: 'dataset:remove',
-  DatasetAnalyze: 'dataset:analyze'
+  DatasetAnalyze: 'dataset:analyze',
+  DatasetAnalyzeSpectrum: 'dataset:analyzeSpectrum'
 } as const
 
 export type IpcChannelName = (typeof IpcChannel)[keyof typeof IpcChannel]

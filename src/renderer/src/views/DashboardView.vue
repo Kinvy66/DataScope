@@ -43,6 +43,9 @@ const datasetStore = useDatasetStore()
           <button class="btn" type="button" :disabled="!datasetStore.selected" @click="router.push('/signal')">
             信号分析
           </button>
+          <button class="btn" type="button" :disabled="!datasetStore.selected" @click="router.push('/spectrum')">
+            频谱分析
+          </button>
         </div>
       </article>
     </div>

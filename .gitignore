@@ -13,3 +13,4 @@ coverage
 tests/fixtures/generated
 *.local
 .env
+test_data

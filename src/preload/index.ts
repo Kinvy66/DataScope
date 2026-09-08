@@ -5,6 +5,7 @@ import type { AppSettings } from '@shared/types/settings'
 import type { LogQuery, LogWritePayload } from '@shared/types/log'
 import type { CreateProjectInput, UpdateProjectInput } from '@shared/types/project'
 import type { AnalysisRequest } from '@shared/types/analysis'
+import type { SpectrumRequest } from '@shared/types/spectrum'
 import type { SourceFormat, ViewportRequest } from '@shared/types/dataset'
 
 const api: DataScopeAPI = {
@@ -54,7 +55,9 @@ const api: DataScopeAPI = {
     rename: (datasetId: string, name: string) =>
       ipcRenderer.invoke(IpcChannel.DatasetRename, datasetId, name),
     remove: (datasetId: string) => ipcRenderer.invoke(IpcChannel.DatasetRemove, datasetId),
-    analyze: (request: AnalysisRequest) => ipcRenderer.invoke(IpcChannel.DatasetAnalyze, request)
+    analyze: (request: AnalysisRequest) => ipcRenderer.invoke(IpcChannel.DatasetAnalyze, request),
+    analyzeSpectrum: (request: SpectrumRequest) =>
+      ipcRenderer.invoke(IpcChannel.DatasetAnalyzeSpectrum, request)
   }
 }
 

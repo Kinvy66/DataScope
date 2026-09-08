@@ -7,6 +7,7 @@ import type {
   UpdateProjectInput
 } from './project'
 import type { AnalysisRequest, AnalysisResult } from './analysis'
+import type { SpectrumRequest, SpectrumResult } from './spectrum'
 import type {
   ChannelStatistics,
   DatasetInfo,
@@ -60,6 +61,7 @@ export interface DataScopeAPI {
     rename: (datasetId: string, name: string) => Promise<DatasetInfo>
     remove: (datasetId: string) => Promise<void>
     analyze: (request: AnalysisRequest) => Promise<AnalysisResult>
+    analyzeSpectrum: (request: SpectrumRequest) => Promise<SpectrumResult>
   }
 }
 
