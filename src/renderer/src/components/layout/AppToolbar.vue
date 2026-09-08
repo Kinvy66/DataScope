@@ -24,27 +24,33 @@ function toggleTheme(): void {
       <span class="ver">V1.0</span>
     </div>
     <div class="actions">
-      <button class="btn" type="button" @click="projectStore.openCreateDialog">
+      <button class="btn" type="button" data-testid="toolbar-new-project" @click="projectStore.openCreateDialog">
         <AppIcon name="folderPlus" />
         {{ t('toolbar.newProject') }}
       </button>
-      <button class="btn" type="button" @click="projectStore.openProject()">
+      <button class="btn" type="button" data-testid="toolbar-open" @click="projectStore.openProject()">
         <AppIcon name="folderOpen" />
         {{ t('toolbar.open') }}
       </button>
-      <button class="btn" type="button" :disabled="!projectStore.hasProject" @click="projectStore.save()">
+      <button class="btn" type="button" data-testid="toolbar-save" :disabled="!projectStore.hasProject" @click="projectStore.save()">
         <AppIcon name="save" />
         {{ t('toolbar.save') }}
       </button>
-      <button class="btn" type="button" :disabled="!projectStore.hasProject" @click="projectStore.saveAs()">
+      <button class="btn" type="button" data-testid="toolbar-save-as" :disabled="!projectStore.hasProject" @click="projectStore.saveAs()">
         <AppIcon name="copy" />
         {{ t('toolbar.saveAs') }}
       </button>
-      <button class="btn" type="button" :disabled="!projectStore.hasProject" @click="projectStore.requestClose()">
+      <button class="btn" type="button" data-testid="toolbar-close" :disabled="!projectStore.hasProject" @click="projectStore.requestClose()">
         <AppIcon name="close" />
         {{ t('toolbar.closeProject') }}
       </button>
-      <button class="btn btn-primary" type="button" :disabled="!projectStore.hasProject" @click="datasetStore.importData()">
+      <button
+        class="btn btn-primary"
+        type="button"
+        data-testid="toolbar-import"
+        :disabled="!projectStore.hasProject"
+        @click="datasetStore.importData()"
+      >
         <AppIcon name="download" />
         {{ t('toolbar.import') }}
       </button>

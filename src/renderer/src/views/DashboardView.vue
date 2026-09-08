@@ -111,7 +111,7 @@ const { t } = useI18n()
           <tr v-for="item in projectStore.recent" :key="item">
             <td>{{ formatPath(item) }}</td>
             <td>
-              <button class="btn" type="button" @click="projectStore.openProject(item)">
+              <button class="btn" type="button" data-testid="recent-open" @click="projectStore.openProject(item)">
                 <AppIcon name="folderOpen" />
                 {{ t('common.open') }}
               </button>

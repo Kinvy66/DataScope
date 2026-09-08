@@ -29,7 +29,7 @@ const { t } = useI18n()
           <AppIcon name="eraser" />
           {{ t('common.discard') }}
         </button>
-        <button class="btn btn-primary" type="button" @click="emit('save')">
+        <button class="btn btn-primary" type="button" data-testid="unsaved-save" @click="emit('save')">
           <AppIcon name="save" />
           {{ t('common.save') }}
         </button>

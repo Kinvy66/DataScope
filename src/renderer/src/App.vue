@@ -12,7 +12,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="app-root" :data-theme="theme">
+  <div class="app-root" :data-theme="theme" :data-app-ready="appStore.ready ? 'true' : 'false'">
     <AppLayout />
   </div>
 </template>

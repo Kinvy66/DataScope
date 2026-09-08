@@ -25,7 +25,7 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <div class="overlay" @mousedown.self="projectStore.closeCreateDialog()">
+  <div class="overlay" data-testid="new-project-dialog" @mousedown.self="projectStore.closeCreateDialog()">
     <section class="dialog">
       <header>
         <div class="kicker">{{ t('newProject.kicker') }}</div>
@@ -58,6 +58,7 @@ async function submit(): Promise<void> {
         <button
           class="btn btn-primary"
           type="button"
+          data-testid="new-project-create"
           :disabled="projectStore.busy || !name.trim() || !location.trim()"
           @click="submit"
         >

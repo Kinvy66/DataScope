@@ -565,7 +565,7 @@ function addMarkerAtCursor(): void {
           </button>
         </div>
       </aside>
-      <div ref="hostRef" class="canvas-wrap">
+      <div ref="hostRef" class="canvas-wrap" data-testid="waveform-canvas">
         <canvas
           ref="canvasRef"
           @wheel.prevent="onWheel"

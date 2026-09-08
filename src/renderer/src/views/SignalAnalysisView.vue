@@ -116,6 +116,7 @@ const windowLabel = computed(() => {
             <button
               class="btn btn-primary"
               type="button"
+              data-testid="signal-run"
               :disabled="!analysisStore.canRun"
               @click="analysisStore.run()"
             >
@@ -187,7 +188,7 @@ const windowLabel = computed(() => {
                 })
               }}
             </p>
-            <table class="table">
+            <table class="table" data-testid="analysis-results">
               <thead>
                 <tr>
                   <th>{{ t('common.channel') }}</th>

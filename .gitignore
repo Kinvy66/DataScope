@@ -15,3 +15,7 @@ tests/fixtures/generated
 .env
 test_data
 /dataset
+test-results
+playwright-report
+blob-report
+playwright/.cache

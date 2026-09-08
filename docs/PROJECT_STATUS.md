@@ -8,8 +8,8 @@
 | 分支 | `master` |
 | 进度基准 | 以本文件所在 commit 为准 |
 | 产品阶段 | V1.0 Clean（禁止故意注入缺陷） |
-| 已完成 | Phase 1–11 + 5B：框架、工程、导入、波形、时域分析、数字滤波、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视、任务系统、数据导出、应用设置与界面中英切换 |
-| 建议下一阶段 | E2E 测试（12） |
+| 已完成 | Phase 1–12 + 5B：框架、工程、导入、波形、时域分析、数字滤波、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视、任务系统、数据导出、应用设置与界面中英切换、Playwright Electron 冒烟与 `test-data/` |
+| 建议下一阶段 | 打 `v1.0-clean` 标签，或补 DataScope 私有二进制导出；故障注入只在 `testing-lab` |
 
 使用手册：[`docs/wiki/README.md`](./wiki/README.md)  
 开发任务书：[`docs/dev_plan/README.md`](./dev_plan/README.md)
@@ -31,7 +31,7 @@
 | 9 | 任务系统 | 已完成 | 导入 / 生成 / 滤波 / 时域 / 频谱 / 导出进入任务列表；暂停、继续、取消、重试 |
 | 10 | 数据导出 | 已完成 | CSV / TXT / JSON 写入 `exports/`，走任务系统；无私有二进制 |
 | 11 | 设置系统 | 已完成 | 语言、主题、日志级别、自动保存、数据默认值、波形视口缓存；界面走 i18n |
-| 12 | 测试支持 / E2E | 部分完成 | 有 Vitest 单测与 fixtures；无 Playwright / Electron E2E |
+| 12 | 测试支持 / E2E | 已完成 | Playwright Electron 冒烟；`test-data/` 分类资产；CI 跑 typecheck/lint/Vitest。未做安装包 E2E |
 
 当前导航页均已落地业务。DataScope 私有二进制导出尚未做。
 
@@ -134,6 +134,13 @@
 - 主进程 `DataScopeError`、任务进度说明、滤波结果文件名仍为中文（写入磁盘 / IPC 的技术字符串）
 - 单测：`tests/settings/validate.spec.ts`、`tests/i18n/translate.spec.ts`、`tests/datasets/lruCache.spec.ts`
 
+### Phase 12 测试支持 / E2E
+
+- Playwright Electron 冒烟：启动构建产物 → 新建工程 → 导入 → 波形 → 时域分析 → 导出 → 保存关闭 → 最近工程再打开
+- 分类数据：`test-data/{normal,empty,malformed,boundary,large,unicode,abnormal}`
+- CI：`.github/workflows/ci.yml` 跑 typecheck / lint / Vitest（不在 Ubuntu 上跑 Electron GUI）
+- 未覆盖：electron-builder 安装包安装与启动
+
 ## 测试与验证
 
 已有单测：
@@ -160,8 +167,9 @@
 - `tests/settings/validate.spec.ts`
 - `tests/i18n/translate.spec.ts`
 - `tests/datasets/lruCache.spec.ts`
+- `tests/testDataCatalog.spec.ts`
 
-fixtures：`tests/fixtures/csv/*`、`tests/fixtures/json/normal.json`；示例数据：`samples/`（含 `perg-ioba-0001.csv`）。
+fixtures：`tests/fixtures/csv/*`、`tests/fixtures/json/normal.json`；工程级测试数据：`test-data/`；示例数据：`samples/`（含 `perg-ioba-0001.csv`）。E2E：`e2e/smoke.spec.ts`。
 
 阶段结束后应实际执行：
 
@@ -170,11 +178,12 @@ npm run typecheck
 npm run lint
 npm test
 npm run build
+npm run test:e2e
 ```
 
 ## 建议下一阶段
 
-按功能依赖，下一步做 **E2E 测试资产**（Playwright / Electron 冒烟）。主进程错误文案的 i18n 可以后补。不要把 Playwright 和故障注入绑在一次提交里。故障注入留给 testing-lab。
+V1.0 功能链（工程 → 导入 → 可视化 → 分析 → Virtual DAQ → 任务 → 导出 → 设置 → E2E）已闭合。下一步更合理的是打 **`v1.0-clean` 标签**，或补 PRD 中尚未做的 **DataScope 私有二进制导出**。主进程错误文案 i18n 可以后补。故障注入只在 `testing-lab`，不要和 Clean 实现混在一起。安装包级 E2E 也仍可后补。
 
 ## 维护规则
 

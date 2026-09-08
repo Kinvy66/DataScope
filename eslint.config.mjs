@@ -6,7 +6,15 @@ import vueParser from 'vue-eslint-parser'
 
 export default [
   {
-    ignores: ['out/**', 'dist/**', 'release/**', 'node_modules/**', 'coverage/**']
+    ignores: [
+      'out/**',
+      'dist/**',
+      'release/**',
+      'node_modules/**',
+      'coverage/**',
+      'test-results/**',
+      'playwright-report/**'
+    ]
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

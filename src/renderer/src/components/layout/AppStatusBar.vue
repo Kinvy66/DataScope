@@ -39,13 +39,13 @@ const taskLabel = computed(() => {
 
 <template>
   <footer class="status">
-    <span>{{ projectStore.isDirty ? t('status.unsaved') : t('status.ready') }}</span>
+    <span data-testid="status-dirty">{{ projectStore.isDirty ? t('status.unsaved') : t('status.ready') }}</span>
     <span class="sep">|</span>
-    <span>{{ t('status.project', { name: projectStore.projectName }) }}</span>
+    <span data-testid="status-project">{{ t('status.project', { name: projectStore.projectName }) }}</span>
     <span class="sep">|</span>
-    <span>{{ channelCount }} ch</span>
+    <span data-testid="status-channels">{{ channelCount }} ch</span>
     <span class="sep">|</span>
-    <span>{{ sampleCount.toLocaleString() }} samples</span>
+    <span data-testid="status-samples">{{ sampleCount.toLocaleString() }} samples</span>
     <span class="sep">|</span>
     <span>{{ t('status.daq', { state: t(DAQ_STATE_MESSAGE_KEYS[liveStore.state]) }) }}</span>
     <span class="sep">|</span>

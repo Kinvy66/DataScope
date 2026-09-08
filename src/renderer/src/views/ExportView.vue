@@ -119,7 +119,7 @@ const windowLabel = computed(() => {
         <button class="btn btn-ghost" type="button" @click="exportStore.useFullRange()">{{ t('common.fullRange') }}</button>
 
         <div class="row">
-          <button class="btn btn-primary" type="submit" :disabled="!exportStore.canRun">
+          <button class="btn btn-primary" type="submit" data-testid="export-run" :disabled="!exportStore.canRun">
             <AppIcon name="upload" />
             {{ exportStore.busy ? t('export.busy') : t('export.run') }}
           </button>
@@ -139,7 +139,7 @@ const windowLabel = computed(() => {
           <li>{{ t('export.help4') }}</li>
           <li>{{ t('export.help5') }}</li>
         </ul>
-        <div v-if="exportStore.result" class="result">
+        <div v-if="exportStore.result" class="result" data-testid="export-result">
           <h2>{{ t('export.last') }}</h2>
           <p>{{ exportStore.result.relativePath }}</p>
           <p class="muted">

@@ -1,6 +1,6 @@
 # DataScope
 
-DataScope 是一个用于软件测试学习的多通道时序数据桌面软件。当前版本覆盖 Phase 1–11 与 5B：基础框架、工程管理、数据导入、波形可视化、时域分析、数字滤波、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视、任务系统、数据导出、应用设置与中英界面。
+DataScope 是一个用于软件测试学习的多通道时序数据桌面软件。当前版本覆盖 Phase 1–12 与 5B：基础框架、工程管理、数据导入、波形可视化、时域分析、数字滤波、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视、任务系统、数据导出、应用设置与中英界面、Playwright Electron 冒烟与分类测试数据。
 
 使用手册（中文，含阶段标注）：[`docs/wiki/README.md`](docs/wiki/README.md)
 
@@ -15,6 +15,7 @@ DataScope 是一个用于软件测试学习的多通道时序数据桌面软件�
 - Pinia
 - Vue Router
 - Vitest
+- Playwright（Electron 冒烟，不下载 Chromium）
 
 ## 开发
 
@@ -30,7 +31,10 @@ npm run typecheck
 npm run lint
 npm test
 npm run build
+npm run test:e2e
 ```
+
+`npm run test:e2e` 会先构建再启动打包后的 Electron 窗口，走一遍：新建工程 → 导入 `test-data/normal/normal.csv` → 波形 → 时域分析 → 导出 → 保存关闭 → 再打开。安装包级 E2E 尚未覆盖。分类测试文件见 `test-data/`。
 
 ## 工程目录
 

@@ -33,6 +33,7 @@ const items = computed((): { path: string; label: string; hint: string; icon: Ic
       :key="item.path"
       class="nav-item"
       :class="{ active: route.path === item.path }"
+      :data-testid="'nav-' + (item.path === '/' ? 'dashboard' : item.path.slice(1))"
       type="button"
       @click="router.push(item.path)"
     >
