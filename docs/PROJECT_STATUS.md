@@ -6,10 +6,10 @@
 | --- | --- |
 | 更新日期 | 2026-09-08 |
 | 分支 | `master` |
-| 进度基准 | 以本文件所在 commit 为准 |
-| 产品阶段 | V1.0 Clean（禁止故意注入缺陷） |
+| 进度基准 | git tag `v1.0-clean` |
+| 产品阶段 | V1.0 Clean（已打标签；禁止在此基线上注入缺陷） |
 | 已完成 | Phase 1–12 + 5B，含 DataScope Binary（`.dsb`）导出/再导入 |
-| 建议下一阶段 | 打 `v1.0-clean` 标签；故障注入只在 `testing-lab` |
+| 建议下一阶段 | 仅在用户明确要求时，从 `v1.0-clean` 拉 `testing-lab` 做故障注入 |
 
 使用手册：[`docs/wiki/README.md`](./wiki/README.md)  
 开发任务书：[`docs/dev_plan/README.md`](./dev_plan/README.md)
@@ -33,7 +33,7 @@
 | 11 | 设置系统 | 已完成 | 语言、主题、日志级别、自动保存、数据默认值、波形视口缓存；界面走 i18n |
 | 12 | 测试支持 / E2E | 已完成 | Playwright Electron 冒烟；`test-data/` 分类资产；CI 跑 typecheck/lint/Vitest。未做安装包 E2E |
 
-当前导航页均已落地业务。V1.0 Clean 功能链已闭合。
+当前导航页均已落地业务。V1.0 Clean 功能链已闭合，基线标签为 `v1.0-clean`。
 
 ## 已完成能力
 
@@ -184,7 +184,9 @@ npm run test:e2e
 
 ## 建议下一阶段
 
-V1.0 功能链（工程 → 导入 → 可视化 → 分析 → Virtual DAQ → 任务 → 导出含 DSB → 设置 → E2E）已闭合。下一步更合理的是打 **`v1.0-clean` 标签**。主进程错误文案 i18n、安装包级 E2E 可以后补。故障注入只在 `testing-lab`，不要和 Clean 实现混在一起。
+V1.0 功能链已闭合，Git 标签 **`v1.0-clean`** 标记无故意缺陷的基线。不要改这个标签。主进程错误文案 i18n、安装包级 E2E 若要做，在 `master` 上另开增量，不要移动该标签。
+
+故障注入只在用户明确要求后，从 `v1.0-clean` 创建 **`testing-lab`** 分支进行。不要把缺陷写进 `master` 或改写 `v1.0-clean`。
 
 ## 维护规则
 

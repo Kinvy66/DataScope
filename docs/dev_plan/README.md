@@ -32,4 +32,4 @@ QA 角色：[`DataScope 测试工程师 Prompt.md`](./DataScope%20测试工程�
 1. 先读 `docs/PROJECT_STATUS.md` 和源码，再执行某一阶段任务书。
 2. 已完成阶段的任务书保留作验收对照，不要删。
 3. 一次只做一个可验收增量。不要把 Marker、滤波、实时采集和导出混在一次提交里。
-4. V1.0 Clean 禁止故意注入缺陷。
+4. `v1.0-clean` 是无故意缺陷的基线标签，不要改写。故障注入只在 `testing-lab`。

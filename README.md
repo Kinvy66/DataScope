@@ -1,6 +1,6 @@
 # DataScope
 
-DataScope 是一个用于软件测试学习的多通道时序数据桌面软件。当前版本覆盖 Phase 1–12 与 5B，并支持 DataScope Binary（`.dsb`）导出与再导入。
+DataScope 是一个用于软件测试学习的多通道时序数据桌面软件。当前版本覆盖 Phase 1–12 与 5B，并支持 DataScope Binary（`.dsb`）导出与再导入。无故意缺陷的基线是 git 标签 `v1.0-clean`。
 
 使用手册（中文，含阶段标注）：[`docs/wiki/README.md`](docs/wiki/README.md)
 
