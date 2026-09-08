@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import AppIcon from '../components/common/AppIcon.vue'
 import { FFT_SIZES } from '@shared/algorithms/fft'
 import SpectrumPlot from '../components/spectrum/SpectrumPlot.vue'
+import { useI18n } from '../i18n'
 import { useDatasetStore } from '../stores/dataset'
 import { useProjectStore } from '../stores/project'
 import { useSpectrumStore } from '../stores/spectrum'
@@ -14,6 +15,7 @@ const router = useRouter()
 const projectStore = useProjectStore()
 const datasetStore = useDatasetStore()
 const spectrumStore = useSpectrumStore()
+const { t } = useI18n()
 
 const dataset = computed(() => datasetStore.selected)
 
@@ -45,20 +47,20 @@ const plotColor = computed(() => {
 <template>
   <section class="page">
     <header class="page-header">
-      <div class="kicker">Spectrum Analysis</div>
-      <h1>频谱分析</h1>
-      <p>对选定通道做 FFT，显示频率轴、幅度谱、功率谱和峰值频率。</p>
+      <div class="kicker">{{ t('spectrum.kicker') }}</div>
+      <h1>{{ t('spectrum.title') }}</h1>
+      <p>{{ t('spectrum.desc') }}</p>
     </header>
 
     <div v-if="!projectStore.hasProject" class="panel empty-state">
-      <p>请先新建或打开工程，并导入数据集后再进行频谱分析。</p>
+      <p>{{ t('spectrum.needProject') }}</p>
     </div>
 
     <div v-else-if="!dataset" class="panel empty-state">
-      <p>当前工程还没有可分析的数据集。</p>
+      <p>{{ t('spectrum.noDataset') }}</p>
       <button class="btn btn-primary" type="button" @click="router.push('/data')">
         <AppIcon name="database" />
-        前往数据浏览
+        {{ t('common.goData') }}
       </button>
     </div>
 
@@ -72,7 +74,7 @@ const plotColor = computed(() => {
           </p>
 
           <div class="field">
-            <label>分析通道</label>
+            <label>{{ t('signal.channels') }}</label>
             <div class="channels">
               <label v-for="channel in dataset.channels" :key="channel.id" class="channel">
                 <input
@@ -86,13 +88,13 @@ const plotColor = computed(() => {
             </div>
             <button class="btn btn-ghost" type="button" @click="spectrumStore.selectAllChannels()">
               <AppIcon name="checkSquare" />
-              全选通道
+              {{ t('common.selectAllChannels') }}
             </button>
           </div>
 
           <div class="range">
             <div class="field">
-              <label for="spec-start">起始采样点</label>
+              <label for="spec-start">{{ t('common.startIndex') }}</label>
               <input
                 id="spec-start"
                 v-model.number="spectrumStore.startIndex"
@@ -102,7 +104,7 @@ const plotColor = computed(() => {
               />
             </div>
             <div class="field">
-              <label for="spec-end">结束采样点</label>
+              <label for="spec-end">{{ t('common.endIndex') }}</label>
               <input
                 id="spec-end"
                 v-model.number="spectrumStore.endIndex"
@@ -112,13 +114,13 @@ const plotColor = computed(() => {
               />
             </div>
             <div class="field">
-              <label for="fft-size">FFT 点数</label>
+              <label for="fft-size">{{ t('spectrum.fftSize') }}</label>
               <select id="fft-size" v-model.number="spectrumStore.fftSize">
                 <option v-for="size in FFT_SIZES" :key="size" :value="size">{{ size }}</option>
               </select>
             </div>
             <div class="field">
-              <label for="fft-window">窗函数</label>
+              <label for="fft-window">{{ t('spectrum.window') }}</label>
               <select id="fft-window" v-model="spectrumStore.windowType">
                 <option value="rectangular">Rectangular</option>
                 <option value="hann">Hann</option>
@@ -131,7 +133,7 @@ const plotColor = computed(() => {
           <div class="row">
             <button class="btn" type="button" @click="spectrumStore.useFullRange()">
               <AppIcon name="maximize" />
-              全范围
+              {{ t('common.fullRange') }}
             </button>
             <button
               class="btn btn-primary"
@@ -140,24 +142,24 @@ const plotColor = computed(() => {
               @click="spectrumStore.run()"
             >
               <AppIcon name="play" />
-              {{ spectrumStore.busy ? '分析中…' : '运行 FFT' }}
+              {{ spectrumStore.busy ? t('spectrum.running') : t('spectrum.run') }}
             </button>
           </div>
         </aside>
 
         <article class="panel results">
           <div class="results-head">
-            <h2>频谱</h2>
+            <h2>{{ t('spectrum.plot') }}</h2>
             <div class="row compact">
               <label class="inline">
-                显示
+                {{ t('spectrum.show') }}
                 <select v-model="spectrumStore.scale">
-                  <option value="magnitude">幅度谱</option>
-                  <option value="power">功率谱</option>
+                  <option value="magnitude">{{ t('spectrum.magnitude') }}</option>
+                  <option value="power">{{ t('spectrum.power') }}</option>
                 </select>
               </label>
               <label v-if="spectrumStore.result" class="inline">
-                绘图通道
+                {{ t('spectrum.plotChannel') }}
                 <select v-model="spectrumStore.plotChannelId">
                   <option
                     v-for="channel in spectrumStore.result.channels"
@@ -173,10 +175,14 @@ const plotColor = computed(() => {
 
           <template v-if="spectrumStore.result && spectrumStore.plotted">
             <p class="muted">
-              计算于 {{ formatTimestamp(spectrumStore.result.computedAt) }} · FFT
-              {{ spectrumStore.result.fftSize }} · Δf
-              {{ formatNumber(spectrumStore.result.frequencyResolution, 4) }} Hz · Nyquist
-              {{ formatNumber(spectrumStore.result.nyquist, 3) }} Hz
+              {{
+                t('spectrum.meta', {
+                  time: formatTimestamp(spectrumStore.result.computedAt),
+                  size: spectrumStore.result.fftSize,
+                  df: formatNumber(spectrumStore.result.frequencyResolution, 4),
+                  nyquist: formatNumber(spectrumStore.result.nyquist, 3)
+                })
+              }}
             </p>
             <SpectrumPlot
               :frequencies="spectrumStore.plotted.frequencies"
@@ -188,11 +194,11 @@ const plotColor = computed(() => {
             <table class="table">
               <thead>
                 <tr>
-                  <th>通道</th>
-                  <th>峰值频率</th>
-                  <th>峰值幅度</th>
-                  <th>峰值功率</th>
-                  <th>使用点数</th>
+                  <th>{{ t('common.channel') }}</th>
+                  <th>{{ t('spectrum.peakFrequency') }}</th>
+                  <th>{{ t('spectrum.peakMagnitude') }}</th>
+                  <th>{{ t('spectrum.peakPower') }}</th>
+                  <th>{{ t('spectrum.usedSamples') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -206,10 +212,10 @@ const plotColor = computed(() => {
               </tbody>
             </table>
             <p v-if="spectrumStore.result.outputPath" class="muted">
-              已写入 {{ formatPath(spectrumStore.result.outputPath) }}
+              {{ t('signal.written', { path: formatPath(spectrumStore.result.outputPath) }) }}
             </p>
           </template>
-          <p v-else class="muted">选择通道、FFT 点数和窗函数后点击“运行 FFT”。结果会保存到工程的 analysis 目录。</p>
+          <p v-else class="muted">{{ t('spectrum.empty') }}</p>
         </article>
       </div>
     </template>

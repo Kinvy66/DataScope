@@ -7,6 +7,10 @@ import { useDatasetStore } from './dataset'
 import { useLogStore } from './log'
 import { useLiveStore } from './live'
 import { useTaskStore } from './task'
+import { useGeneratorStore } from './generator'
+import { useExportStore } from './export'
+
+let autosaveTimer: ReturnType<typeof setInterval> | null = null
 
 export const useAppStore = defineStore('app', () => {
   const settings = ref<AppSettings>({ ...DEFAULT_SETTINGS, recentProjects: [] })
@@ -20,6 +24,7 @@ export const useAppStore = defineStore('app', () => {
   async function initialize(): Promise<void> {
     settings.value = await window.datascope.settings.get()
     applyTheme(settings.value.theme)
+    applyLanguage(settings.value.language)
     info.value = await window.datascope.app.getInfo()
     const projectStore = useProjectStore()
     const datasetStore = useDatasetStore()
@@ -31,6 +36,8 @@ export const useAppStore = defineStore('app', () => {
     await logStore.refresh()
     await liveStore.hydrate()
     await taskStore.hydrate()
+    await applyDataDefaults()
+    syncAutosave()
     window.datascope.app.onCloseRequested(() => {
       closeDialogOpen.value = true
     })
@@ -50,6 +57,17 @@ export const useAppStore = defineStore('app', () => {
   async function updateSettings(partial: Partial<AppSettings>): Promise<void> {
     settings.value = await window.datascope.settings.set(partial)
     applyTheme(settings.value.theme)
+    applyLanguage(settings.value.language)
+    if (
+      partial.defaultSampleRate !== undefined ||
+      partial.defaultChannelCount !== undefined ||
+      partial.defaultExportFormat !== undefined
+    ) {
+      await applyDataDefaults()
+    }
+    if (partial.autosaveIntervalSec !== undefined) {
+      syncAutosave()
+    }
   }
 
   function setGlobalError(message: string | null): void {
@@ -116,4 +134,30 @@ export const useAppStore = defineStore('app', () => {
 
 function applyTheme(theme: AppSettings['theme']): void {
   document.documentElement.dataset.theme = theme
+}
+
+function applyLanguage(language: AppSettings['language']): void {
+  document.documentElement.lang = language
+}
+
+function syncAutosave(): void {
+  if (autosaveTimer !== null) {
+    clearInterval(autosaveTimer)
+    autosaveTimer = null
+  }
+  const seconds = useAppStore().settings.autosaveIntervalSec
+  if (seconds <= 0) return
+  autosaveTimer = setInterval(() => {
+    const projectStore = useProjectStore()
+    if (projectStore.hasProject && projectStore.isDirty && !projectStore.busy) {
+      void projectStore.save()
+    }
+  }, seconds * 1000)
+}
+
+async function applyDataDefaults(): Promise<void> {
+  const snapshot = useAppStore().settings
+  useGeneratorStore().applyDefaults(snapshot)
+  useExportStore().applyDefaults(snapshot)
+  await useLiveStore().applyDefaults(snapshot)
 }

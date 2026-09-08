@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { DaqCommand, LiveStatus } from '@shared/types/live'
-import { DEFAULT_LIVE_CONFIG } from '@shared/types/live'
+import { DEFAULT_LIVE_CONFIG, LIVE_MAX_CHANNELS } from '@shared/types/live'
 import type { WaveformKind } from '@shared/types/generator'
+import type { AppSettings } from '@shared/types/settings'
+import { tt } from '../i18n'
 import { getErrorMessage } from '../utils/format'
 import { useAppStore } from './app'
 import { useDatasetStore } from './dataset'
@@ -105,7 +107,7 @@ export const useLiveStore = defineStore('live', () => {
   async function capture(): Promise<void> {
     const projectStore = useProjectStore()
     if (!projectStore.hasProject) {
-      useAppStore().setGlobalError('请先新建或打开工程，再把实时数据写入工程')
+      useAppStore().setGlobalError(tt('error.needProjectCapture'))
       return
     }
     busy.value = true
@@ -122,6 +124,30 @@ export const useLiveStore = defineStore('live', () => {
       await window.datascope.log.write({ level: 'ERROR', message })
     } finally {
       busy.value = false
+    }
+  }
+
+  async function applyDefaults(settings: AppSettings): Promise<void> {
+    if (status.value && !status.value.canConfigure) return
+    sampleRate.value = settings.defaultSampleRate
+    channelCount.value = Math.min(LIVE_MAX_CHANNELS, Math.max(1, Math.floor(settings.defaultChannelCount)))
+    try {
+      const next = await window.datascope.live.configure({
+        deviceName: deviceName.value,
+        channelCount: channelCount.value,
+        sampleRate: sampleRate.value,
+        bufferCapacity: bufferCapacity.value,
+        samplesPerPacket: samplesPerPacket.value,
+        kind: kind.value,
+        frequency: frequency.value,
+        amplitude: amplitude.value,
+        offset: offset.value,
+        noiseLevel: noiseLevel.value,
+        seed: 1
+      })
+      status.value = next
+    } catch {
+      /* Keep form values; connect will validate frequency vs Nyquist. */
     }
   }
 
@@ -145,6 +171,7 @@ export const useLiveStore = defineStore('live', () => {
     hydrate,
     applyConfig,
     command,
-    capture
+    capture,
+    applyDefaults
   }
 })

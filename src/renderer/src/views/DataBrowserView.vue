@@ -4,7 +4,9 @@ import { useRouter } from 'vue-router'
 import AppIcon from '../components/common/AppIcon.vue'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import WaveformViewer from '../components/waveform/WaveformViewer.vue'
-import { MARKER_TYPE_LABELS, elapsedSeconds } from '@shared/markers/manage'
+import { MARKER_TYPE_MESSAGE_KEYS } from '@shared/i18n'
+import { elapsedSeconds } from '@shared/markers/manage'
+import { useI18n } from '../i18n'
 import { useDatasetStore } from '../stores/dataset'
 import { useProjectStore } from '../stores/project'
 import { formatDuration, formatNumber, formatTimestamp } from '../utils/format'
@@ -13,6 +15,7 @@ const router = useRouter()
 
 const datasetStore = useDatasetStore()
 const projectStore = useProjectStore()
+const { t } = useI18n()
 const renamingId = ref<string | null>(null)
 const renameDraft = ref('')
 const pendingDeleteId = ref<string | null>(null)
@@ -53,29 +56,29 @@ async function confirmDelete(): Promise<void> {
 <template>
   <section class="page data-page">
     <header class="page-header">
-      <div class="kicker">Data Browser</div>
-      <h1>数据浏览</h1>
-      <p>查看已导入数据集、通道信息和 Marker，并在下方打开波形工作区。</p>
+      <div class="kicker">{{ t('data.kicker') }}</div>
+      <h1>{{ t('data.title') }}</h1>
+      <p>{{ t('data.desc') }}</p>
     </header>
 
     <div v-if="!projectStore.hasProject" class="panel empty-state">
-      <p>请先新建或打开工程，然后导入 CSV / TXT / JSON 数据。</p>
+      <p>{{ t('data.needProject') }}</p>
     </div>
 
     <div v-else class="browser">
       <aside class="panel list">
         <div class="list-head">
-          <strong>文件列表</strong>
+          <strong>{{ t('data.fileList') }}</strong>
           <button class="btn btn-primary" type="button" :disabled="datasetStore.busy" @click="datasetStore.importData()">
             <AppIcon name="download" />
-            导入
+            {{ t('data.import') }}
           </button>
         </div>
         <input
           v-model="datasetStore.search"
           class="search"
           type="search"
-          placeholder="搜索名称、通道或格式"
+          :placeholder="t('data.searchPlaceholder')"
         />
         <button
           v-for="item in datasetStore.filtered"
@@ -91,16 +94,16 @@ async function confirmDelete(): Promise<void> {
           </span>
           <small>{{ item.channelCount }} ch · {{ item.sampleCount.toLocaleString() }} · {{ item.metadata.sourceFormat.toUpperCase() }}</small>
         </button>
-        <p v-if="datasetStore.datasets.length === 0" class="muted">还没有导入数据。</p>
-        <p v-else-if="datasetStore.filtered.length === 0" class="muted">没有匹配的数据集。</p>
+        <p v-if="datasetStore.datasets.length === 0" class="muted">{{ t('data.empty') }}</p>
+        <p v-else-if="datasetStore.filtered.length === 0" class="muted">{{ t('data.noMatch') }}</p>
       </aside>
 
       <div class="detail">
         <article v-if="datasetStore.selected" class="panel info">
-          <h2>数据集信息</h2>
+          <h2>{{ t('data.info') }}</h2>
           <dl>
             <div>
-              <dt>名称</dt>
+              <dt>{{ t('common.name') }}</dt>
               <dd v-if="renamingId !== datasetStore.selected.id">{{ datasetStore.selected.name }}</dd>
               <dd v-else>
                 <input
@@ -111,23 +114,23 @@ async function confirmDelete(): Promise<void> {
                 />
               </dd>
             </div>
-            <div><dt>采样率</dt><dd>{{ formatNumber(datasetStore.selected.sampleRate, 3) }} Hz</dd></div>
-            <div><dt>通道数</dt><dd>{{ datasetStore.selected.channelCount }}</dd></div>
-            <div><dt>采样点数</dt><dd>{{ datasetStore.selected.sampleCount.toLocaleString() }}</dd></div>
-            <div><dt>时长</dt><dd>{{ formatDuration(datasetStore.selected.duration) }}</dd></div>
-            <div><dt>起始时间</dt><dd>{{ formatNumber(datasetStore.selected.startTime, 6) }} s</dd></div>
-            <div><dt>来源</dt><dd>{{ datasetStore.selected.metadata.sourceFormat.toUpperCase() }}</dd></div>
-            <div><dt>导入时间</dt><dd>{{ formatTimestamp(datasetStore.selected.metadata.importedAt) }}</dd></div>
+            <div><dt>{{ t('data.sampleRate') }}</dt><dd>{{ formatNumber(datasetStore.selected.sampleRate, 3) }} Hz</dd></div>
+            <div><dt>{{ t('data.channelCount') }}</dt><dd>{{ datasetStore.selected.channelCount }}</dd></div>
+            <div><dt>{{ t('data.sampleCount') }}</dt><dd>{{ datasetStore.selected.sampleCount.toLocaleString() }}</dd></div>
+            <div><dt>{{ t('data.duration') }}</dt><dd>{{ formatDuration(datasetStore.selected.duration) }}</dd></div>
+            <div><dt>{{ t('data.startTime') }}</dt><dd>{{ formatNumber(datasetStore.selected.startTime, 6) }} s</dd></div>
+            <div><dt>{{ t('data.source') }}</dt><dd>{{ datasetStore.selected.metadata.sourceFormat.toUpperCase() }}</dd></div>
+            <div><dt>{{ t('data.importedAt') }}</dt><dd>{{ formatTimestamp(datasetStore.selected.metadata.importedAt) }}</dd></div>
           </dl>
           <div class="row">
             <template v-if="renamingId === datasetStore.selected.id">
               <button class="btn btn-primary" type="button" :disabled="datasetStore.busy" @click="commitRename">
                 <AppIcon name="save" />
-                保存名称
+                {{ t('data.saveName') }}
               </button>
               <button class="btn" type="button" @click="cancelRename">
                 <AppIcon name="x" />
-                取消
+                {{ t('common.cancel') }}
               </button>
             </template>
             <template v-else>
@@ -138,7 +141,7 @@ async function confirmDelete(): Promise<void> {
                 @click="startRename(datasetStore.selected.id, datasetStore.selected.name)"
               >
                 <AppIcon name="pencil" />
-                重命名
+                {{ t('data.rename') }}
               </button>
               <button
                 class="btn btn-danger"
@@ -147,24 +150,24 @@ async function confirmDelete(): Promise<void> {
                 @click="requestDelete(datasetStore.selected.id)"
               >
                 <AppIcon name="trash" />
-                删除
+                {{ t('common.delete') }}
               </button>
               <button class="btn" type="button" @click="router.push('/export')">
                 <AppIcon name="upload" />
-                导出
+                {{ t('data.export') }}
               </button>
             </template>
           </div>
         </article>
 
         <article v-if="datasetStore.selected" class="panel info">
-          <h2>通道列表</h2>
+          <h2>{{ t('data.channelList') }}</h2>
           <table class="table">
             <thead>
               <tr>
-                <th>通道</th>
-                <th>颜色</th>
-                <th>单位</th>
+                <th>{{ t('common.channel') }}</th>
+                <th>{{ t('common.color') }}</th>
+                <th>{{ t('data.unit') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -182,11 +185,11 @@ async function confirmDelete(): Promise<void> {
           <table v-if="datasetStore.selected.markers.length" class="table">
             <thead>
               <tr>
-                <th>名称</th>
-                <th>类型</th>
-                <th>采样点</th>
-                <th>相对时间</th>
-                <th>备注</th>
+                <th>{{ t('common.name') }}</th>
+                <th>{{ t('common.type') }}</th>
+                <th>{{ t('common.sampleIndex') }}</th>
+                <th>{{ t('common.relativeTime') }}</th>
+                <th>{{ t('common.note') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -200,28 +203,28 @@ async function confirmDelete(): Promise<void> {
                   <span class="dot" :style="{ background: marker.color }"></span>
                   {{ marker.name }}
                 </td>
-                <td>{{ MARKER_TYPE_LABELS[marker.type] }}</td>
+                <td>{{ t(MARKER_TYPE_MESSAGE_KEYS[marker.type]) }}</td>
                 <td>{{ marker.sampleIndex }}</td>
                 <td>{{ formatNumber(elapsedSeconds(datasetStore.selected.sampleRate, marker.sampleIndex), 6) }} s</td>
                 <td>{{ marker.note || '—' }}</td>
               </tr>
             </tbody>
           </table>
-          <p v-else class="muted">当前数据集没有 Marker。可在波形工具栏从 Cursor A 添加，或打开 Marker 管理页。</p>
+          <p v-else class="muted">{{ t('data.noMarkers') }}</p>
           <div class="row">
             <button class="btn" type="button" @click="router.push('/markers')">
               <AppIcon name="pin" />
-              打开 Marker 管理
+              {{ t('data.openMarkers') }}
             </button>
           </div>
         </article>
 
         <article v-if="datasetStore.statistics.length" class="panel info wide">
-          <h2>统计</h2>
+          <h2>{{ t('data.stats') }}</h2>
           <table class="table">
             <thead>
               <tr>
-                <th>通道</th>
+                <th>{{ t('common.channel') }}</th>
                 <th>Min</th>
                 <th>Max</th>
                 <th>Mean</th>
@@ -258,9 +261,9 @@ async function confirmDelete(): Promise<void> {
 
     <ConfirmDialog
       v-if="pendingDelete"
-      title="删除数据集"
-      :message="`确定删除数据集「${pendingDelete.name}」？工程中的副本文件也会被删除，此操作不可撤销。`"
-      confirm-label="删除"
+      :title="t('data.deleteTitle')"
+      :message="t('data.deleteMessage', { name: pendingDelete.name })"
+      :confirm-label="t('common.delete')"
       danger
       @confirm="confirmDelete"
       @cancel="pendingDeleteId = null"

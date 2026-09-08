@@ -8,8 +8,8 @@
 | 分支 | `master` |
 | 进度基准 | 以本文件所在 commit 为准 |
 | 产品阶段 | V1.0 Clean（禁止故意注入缺陷） |
-| 已完成 | Phase 1–10 + 5B：框架、工程、导入、波形、时域分析、数字滤波、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视、任务系统、数据导出 |
-| 建议下一阶段 | 设置系统完善（11）或 E2E 测试（12） |
+| 已完成 | Phase 1–11 + 5B：框架、工程、导入、波形、时域分析、数字滤波、频谱分析、Marker、离线发生器、Virtual DAQ / 实时监视、任务系统、数据导出、应用设置与界面中英切换 |
+| 建议下一阶段 | E2E 测试（12） |
 
 使用手册：[`docs/wiki/README.md`](./wiki/README.md)  
 开发任务书：[`docs/dev_plan/README.md`](./dev_plan/README.md)
@@ -30,7 +30,7 @@
 | 8B | 实时数据 / Virtual DAQ | 已完成 | 状态机、进程内组包校验、环形缓冲、Live 波形、停止后写入工程 |
 | 9 | 任务系统 | 已完成 | 导入 / 生成 / 滤波 / 时域 / 频谱 / 导出进入任务列表；暂停、继续、取消、重试 |
 | 10 | 数据导出 | 已完成 | CSV / TXT / JSON 写入 `exports/`，走任务系统；无私有二进制 |
-| 11 | 设置系统 | 部分完成 | 主题与日志级别可用；无完整 i18n |
+| 11 | 设置系统 | 已完成 | 语言、主题、日志级别、自动保存、数据默认值、波形视口缓存；界面走 i18n |
 | 12 | 测试支持 / E2E | 部分完成 | 有 Vitest 单测与 fixtures；无 Playwright / Electron E2E |
 
 当前导航页均已落地业务。DataScope 私有二进制导出尚未做。
@@ -126,6 +126,14 @@
 - 页面 `ExportView`；数据浏览与工作台可进入
 - 单测：`tests/exporters/serialize.spec.ts`（含 CSV/TXT/JSON 往返解析）
 
+### Phase 11 设置与国际化
+
+- 应用设置：语言（zh-CN / en-US）、主题、日志级别、自动保存间隔、默认采样率 / 通道数 / 导出格式、波形视口 LRU 缓存条目数
+- 行为：新建工程使用默认采样率；发生器与 Virtual DAQ 表单、导出格式在启动和改默认值时同步；自动保存只写已打开的脏工程；视口缓存命中后不再重复降采样
+- 界面文案：`src/shared/i18n` 词典 + `translate()`，无 vue-i18n 依赖；切换语言立即更新导航、工具栏、状态栏和各业务页
+- 主进程 `DataScopeError`、任务进度说明、滤波结果文件名仍为中文（写入磁盘 / IPC 的技术字符串）
+- 单测：`tests/settings/validate.spec.ts`、`tests/i18n/translate.spec.ts`、`tests/datasets/lruCache.spec.ts`
+
 ## 测试与验证
 
 已有单测：
@@ -149,6 +157,9 @@
 - `tests/tasks/model.spec.ts`
 - `tests/tasks/gate.spec.ts`
 - `tests/exporters/serialize.spec.ts`
+- `tests/settings/validate.spec.ts`
+- `tests/i18n/translate.spec.ts`
+- `tests/datasets/lruCache.spec.ts`
 
 fixtures：`tests/fixtures/csv/*`、`tests/fixtures/json/normal.json`；示例数据：`samples/`（含 `perg-ioba-0001.csv`）。
 
@@ -163,7 +174,7 @@ npm run build
 
 ## 建议下一阶段
 
-按功能依赖，下一步做 **设置系统完善**（i18n 等）或 **E2E 测试资产**。不要把 i18n 和 Playwright 绑在一次提交里。故障注入留给 testing-lab。
+按功能依赖，下一步做 **E2E 测试资产**（Playwright / Electron 冒烟）。主进程错误文案的 i18n 可以后补。不要把 Playwright 和故障注入绑在一次提交里。故障注入留给 testing-lab。
 
 ## 维护规则
 

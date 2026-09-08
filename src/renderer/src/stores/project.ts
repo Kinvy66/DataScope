@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { ProjectState } from '@shared/types/project'
+import { tt } from '../i18n'
 import { getErrorMessage } from '../utils/format'
 import { useDatasetStore } from './dataset'
 import { useAppStore } from './app'
@@ -15,7 +16,7 @@ export const useProjectStore = defineStore('project', () => {
 
   const hasProject = computed(() => current.value !== null)
   const isDirty = computed(() => current.value?.dirty === true)
-  const projectName = computed(() => current.value?.file.name ?? '未打开工程')
+  const projectName = computed(() => current.value?.file.name ?? tt('common.noProject'))
 
   async function hydrate(): Promise<void> {
     current.value = await window.datascope.project.getCurrent()

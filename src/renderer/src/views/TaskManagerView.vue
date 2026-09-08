@@ -3,18 +3,22 @@ import { computed, onUnmounted, ref, watch } from 'vue'
 import AppIcon from '../components/common/AppIcon.vue'
 import { taskDurationMs } from '@shared/tasks/model'
 import {
-  TASK_COMMAND_LABELS,
-  TASK_KIND_LABELS,
-  TASK_STATUS_LABELS,
+  TASK_COMMAND_MESSAGE_KEYS,
+  TASK_KIND_MESSAGE_KEYS,
+  TASK_STATUS_MESSAGE_KEYS
+} from '@shared/i18n'
+import {
   TASK_STATUSES,
   type TaskCommand,
   type TaskRecord,
   type TaskStatus
 } from '@shared/types/task'
+import { useI18n } from '../i18n'
 import { useTaskStore } from '../stores/task'
 import { formatElapsedMs, formatTimestamp } from '../utils/format'
 
 const taskStore = useTaskStore()
+const { t } = useI18n()
 const statusFilter = ref('')
 const now = ref(Date.now())
 let timer: ReturnType<typeof setInterval> | null = null
@@ -73,18 +77,18 @@ const statusOptions: TaskStatus[] = [...TASK_STATUSES]
 <template>
   <section class="page">
     <header class="page-header">
-      <div class="kicker">Task Manager</div>
-      <h1>任务管理</h1>
+      <div class="kicker">{{ t('task.kicker') }}</div>
+      <h1>{{ t('task.title') }}</h1>
       <p>
-        导入、生成、滤波、时域分析、频谱分析和导出会进入后台任务。可在检查点暂停、继续、取消或失败后重试。进度按通道或读写步骤协作更新。
+        {{ t('task.desc') }}
       </p>
     </header>
 
     <div class="filters">
       <select v-model="statusFilter">
-        <option value="">全部状态</option>
+        <option value="">{{ t('task.allStatus') }}</option>
         <option v-for="status in statusOptions" :key="status" :value="status">
-          {{ TASK_STATUS_LABELS[status] }}
+          {{ t(TASK_STATUS_MESSAGE_KEYS[status]) }}
         </option>
       </select>
       <button
@@ -94,7 +98,7 @@ const statusOptions: TaskStatus[] = [...TASK_STATUSES]
         @click="taskStore.clearFinished()"
       >
         <AppIcon name="eraser" />
-        清除已结束
+        {{ t('task.clearFinished') }}
       </button>
     </div>
 
@@ -102,14 +106,14 @@ const statusOptions: TaskStatus[] = [...TASK_STATUSES]
       <table v-if="visible.length > 0" class="table">
         <thead>
           <tr>
-            <th>任务</th>
-            <th>类型</th>
-            <th>状态</th>
-            <th>进度</th>
-            <th>耗时</th>
-            <th>开始时间</th>
-            <th>说明</th>
-            <th>操作</th>
+            <th>{{ t('task.colTask') }}</th>
+            <th>{{ t('task.colKind') }}</th>
+            <th>{{ t('task.colStatus') }}</th>
+            <th>{{ t('task.colProgress') }}</th>
+            <th>{{ t('task.colDuration') }}</th>
+            <th>{{ t('task.colStarted') }}</th>
+            <th>{{ t('task.colMessage') }}</th>
+            <th>{{ t('task.colActions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -118,9 +122,9 @@ const statusOptions: TaskStatus[] = [...TASK_STATUSES]
               <div class="title">{{ task.title }}</div>
               <div v-if="task.resultLabel" class="muted result">{{ task.resultLabel }}</div>
             </td>
-            <td>{{ TASK_KIND_LABELS[task.kind] }}</td>
+            <td>{{ t(TASK_KIND_MESSAGE_KEYS[task.kind]) }}</td>
             <td>
-              <span class="status" :data-status="task.status">{{ TASK_STATUS_LABELS[task.status] }}</span>
+              <span class="status" :data-status="task.status">{{ t(TASK_STATUS_MESSAGE_KEYS[task.status]) }}</span>
             </td>
             <td>
               <div class="progress-cell">
@@ -147,7 +151,7 @@ const statusOptions: TaskStatus[] = [...TASK_STATUSES]
                   @click="runCommand(task, command)"
                 >
                   <AppIcon :name="commandIcons[command]" />
-                  {{ TASK_COMMAND_LABELS[command] }}
+                  {{ t(TASK_COMMAND_MESSAGE_KEYS[command]) }}
                 </button>
               </div>
             </td>
@@ -155,7 +159,7 @@ const statusOptions: TaskStatus[] = [...TASK_STATUSES]
         </tbody>
       </table>
       <p v-else class="muted empty">
-        {{ statusFilter ? '没有符合筛选条件的任务。' : '还没有任务。导入、生成、滤波、分析或导出后会显示在这里。' }}
+        {{ statusFilter ? t('task.emptyFilter') : t('task.empty') }}
       </p>
     </div>
   </section>

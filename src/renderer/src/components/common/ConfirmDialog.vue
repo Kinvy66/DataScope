@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppIcon from './AppIcon.vue'
+import { useI18n } from '../../i18n'
 
 defineProps<{
   title: string
@@ -12,6 +13,8 @@ const emit = defineEmits<{
   confirm: []
   cancel: []
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -22,7 +25,7 @@ const emit = defineEmits<{
       <footer>
         <button class="btn" type="button" @click="emit('cancel')">
           <AppIcon name="x" />
-          取消
+          {{ t('common.cancel') }}
         </button>
         <button
           class="btn"
@@ -31,7 +34,7 @@ const emit = defineEmits<{
           @click="emit('confirm')"
         >
           <AppIcon :name="danger ? 'trash' : 'check'" />
-          {{ confirmLabel ?? '确定' }}
+          {{ confirmLabel ?? t('common.ok') }}
         </button>
       </footer>
     </section>

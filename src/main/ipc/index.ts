@@ -2,6 +2,7 @@ import { BrowserWindow, app, dialog, ipcMain } from 'electron'
 import { IpcChannel } from '@shared/ipc-channels'
 import { APP_NAME, APP_VERSION } from '@shared/constants'
 import { toErrorPayload } from '@shared/errors'
+import { translate } from '@shared/i18n'
 import type { AppInfo } from '@shared/types/app'
 import type { AppSettings } from '@shared/types/settings'
 import type { LogQuery, LogWritePayload } from '@shared/types/log'
@@ -68,7 +69,11 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannel.SettingsGet, async () => settingsService.get())
 
   ipcMain.handle(IpcChannel.SettingsSet, async (_event, partial: Partial<AppSettings>) => {
-    return settingsService.set(partial)
+    return wrap(async () => {
+      const next = await settingsService.set(partial)
+      datasetRegistry.setCacheLimit(next.viewportCacheLimit)
+      return next
+    })
   })
 
   ipcMain.handle(IpcChannel.LogWrite, async (_event, payload: LogWritePayload) => {
@@ -79,7 +84,7 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.DialogOpenDirectory, async (_event, title?: string) => {
     const options = {
-      title: title ?? '选择目录',
+      title: title ?? translate(settingsService.current().language, 'dialog.chooseDirectory'),
       properties: ['openDirectory', 'createDirectory'] as Array<
         'openDirectory' | 'createDirectory'
       >
@@ -93,7 +98,7 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.DialogOpenFile, async (_event, filters, title?: string) => {
     const options = {
-      title: title ?? '选择文件',
+      title: title ?? translate(settingsService.current().language, 'dialog.chooseFile'),
       properties: ['openFile'] as Array<'openFile'>,
       filters
     }
@@ -106,7 +111,7 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.DialogSaveFile, async (_event, filters, title?: string) => {
     const options = {
-      title: title ?? '保存文件',
+      title: title ?? translate(settingsService.current().language, 'dialog.saveFile'),
       filters
     }
     const window = dialogWindow()
@@ -125,13 +130,15 @@ export function registerIpcHandlers(): void {
       let target = rootPath
       if (!target) {
         const window = dialogWindow()
+        const locale = settingsService.current().language
+        const title = translate(locale, 'dialog.openProject')
         const result = window
           ? await dialog.showOpenDialog(window, {
-              title: '打开工程',
+              title,
               properties: ['openDirectory']
             })
           : await dialog.showOpenDialog({
-              title: '打开工程',
+              title,
               properties: ['openDirectory']
             })
         if (result.canceled || !result.filePaths[0]) {

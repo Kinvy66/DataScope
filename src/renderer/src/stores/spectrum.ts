@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { defaultFftSize, type WindowType } from '@shared/algorithms/fft'
 import type { SpectrumResult } from '@shared/types/spectrum'
+import { tt } from '../i18n'
 import { getErrorMessage } from '../utils/format'
 import { useAppStore } from './app'
 import { useDatasetStore } from './dataset'
@@ -88,11 +89,11 @@ export const useSpectrumStore = defineStore('spectrum', () => {
   async function run(): Promise<void> {
     const dataset = datasetStore.selected
     if (!dataset) {
-      useAppStore().setGlobalError('请先导入并选择一个数据集')
+      useAppStore().setGlobalError(tt('error.needDataset'))
       return
     }
     if (selectedChannelIds.value.length === 0) {
-      useAppStore().setGlobalError('请至少选择一个通道')
+      useAppStore().setGlobalError(tt('error.needChannels'))
       return
     }
 

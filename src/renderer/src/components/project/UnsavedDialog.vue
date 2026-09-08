@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppIcon from '../common/AppIcon.vue'
+import { useI18n } from '../../i18n'
 
 defineProps<{
   title: string
@@ -10,25 +11,27 @@ const emit = defineEmits<{
   discard: []
   cancel: []
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
   <div class="overlay" @mousedown.self="emit('cancel')">
     <section class="dialog">
       <h2>{{ title }}</h2>
-      <p class="muted">当前工程包含未保存的修改，请选择如何处理。</p>
+      <p class="muted">{{ t('unsaved.body') }}</p>
       <footer>
         <button class="btn" type="button" @click="emit('cancel')">
           <AppIcon name="x" />
-          取消
+          {{ t('common.cancel') }}
         </button>
         <button class="btn" type="button" @click="emit('discard')">
           <AppIcon name="eraser" />
-          不保存
+          {{ t('common.discard') }}
         </button>
         <button class="btn btn-primary" type="button" @click="emit('save')">
           <AppIcon name="save" />
-          保存
+          {{ t('common.save') }}
         </button>
       </footer>
     </section>

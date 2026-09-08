@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import type { AnalysisResult } from '@shared/types/analysis'
+import { tt } from '../i18n'
 import { getErrorMessage } from '../utils/format'
 import { useAppStore } from './app'
 import { useDatasetStore } from './dataset'
@@ -69,11 +70,11 @@ export const useAnalysisStore = defineStore('analysis', () => {
   async function run(): Promise<void> {
     const dataset = datasetStore.selected
     if (!dataset) {
-      useAppStore().setGlobalError('请先导入并选择一个数据集')
+      useAppStore().setGlobalError(tt('error.needDataset'))
       return
     }
     if (selectedChannelIds.value.length === 0) {
-      useAppStore().setGlobalError('请至少选择一个通道')
+      useAppStore().setGlobalError(tt('error.needChannels'))
       return
     }
 

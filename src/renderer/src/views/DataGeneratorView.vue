@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import AppIcon from '../components/common/AppIcon.vue'
+import { WAVEFORM_MESSAGE_KEYS } from '@shared/i18n'
+import { WAVEFORM_KINDS } from '@shared/types/generator'
+import { useI18n } from '../i18n'
 import { useGeneratorStore } from '../stores/generator'
 import { useProjectStore } from '../stores/project'
 import { formatNumber } from '../utils/format'
@@ -8,52 +11,48 @@ import { formatNumber } from '../utils/format'
 const router = useRouter()
 const projectStore = useProjectStore()
 const generatorStore = useGeneratorStore()
+const { t } = useI18n()
 </script>
 
 <template>
   <section class="page">
     <header class="page-header">
-      <div class="kicker">Data Generator</div>
-      <h1>数据发生器</h1>
-      <p>生成正弦、方波、三角波、直流、噪声或多频信号，并写入当前工程的 data 目录。</p>
+      <div class="kicker">{{ t('generator.kicker') }}</div>
+      <h1>{{ t('generator.title') }}</h1>
+      <p>{{ t('generator.desc') }}</p>
     </header>
 
     <div v-if="!projectStore.hasProject" class="panel empty-state">
-      <p>请先新建或打开工程，再生成测试数据。</p>
+      <p>{{ t('generator.needProject') }}</p>
     </div>
 
     <form v-else class="layout" @submit.prevent="generatorStore.generate()">
       <aside class="panel controls">
         <div class="field">
-          <label for="gen-name">数据集名称</label>
+          <label for="gen-name">{{ t('generator.datasetName') }}</label>
           <input id="gen-name" v-model="generatorStore.name" required />
         </div>
         <div class="field">
-          <label for="gen-kind">波形类型</label>
+          <label for="gen-kind">{{ t('generator.kind') }}</label>
           <select id="gen-kind" v-model="generatorStore.kind">
-            <option value="sine">正弦波</option>
-            <option value="square">方波</option>
-            <option value="triangle">三角波</option>
-            <option value="dc">直流</option>
-            <option value="noise">随机噪声</option>
-            <option value="multi-frequency">多频叠加</option>
+            <option v-for="item in WAVEFORM_KINDS" :key="item" :value="item">{{ t(WAVEFORM_MESSAGE_KEYS[item]) }}</option>
           </select>
         </div>
         <div class="grid">
           <div class="field">
-            <label for="gen-channels">通道数</label>
+            <label for="gen-channels">{{ t('common.channelCount') }}</label>
             <input id="gen-channels" v-model.number="generatorStore.channelCount" type="number" min="1" max="32" />
           </div>
           <div class="field">
-            <label for="gen-rate">采样率 (Hz)</label>
+            <label for="gen-rate">{{ t('common.sampleRate') }}</label>
             <input id="gen-rate" v-model.number="generatorStore.sampleRate" type="number" min="1" step="any" />
           </div>
           <div class="field">
-            <label for="gen-duration">时长 (s)</label>
+            <label for="gen-duration">{{ t('generator.duration') }}</label>
             <input id="gen-duration" v-model.number="generatorStore.duration" type="number" min="0.001" step="any" />
           </div>
           <div class="field">
-            <label for="gen-freq">频率 (Hz)</label>
+            <label for="gen-freq">{{ t('common.frequency') }}</label>
             <input
               id="gen-freq"
               v-model.number="generatorStore.frequency"
@@ -64,44 +63,44 @@ const generatorStore = useGeneratorStore()
             />
           </div>
           <div class="field">
-            <label for="gen-amp">幅度</label>
+            <label for="gen-amp">{{ t('common.amplitude') }}</label>
             <input id="gen-amp" v-model.number="generatorStore.amplitude" type="number" step="any" />
           </div>
           <div class="field">
-            <label for="gen-offset">偏置</label>
+            <label for="gen-offset">{{ t('common.offset') }}</label>
             <input id="gen-offset" v-model.number="generatorStore.offset" type="number" step="any" />
           </div>
           <div class="field">
-            <label for="gen-noise">噪声水平</label>
+            <label for="gen-noise">{{ t('common.noise') }}</label>
             <input id="gen-noise" v-model.number="generatorStore.noiseLevel" type="number" min="0" step="any" />
           </div>
         </div>
         <p class="muted">
-          将生成 {{ generatorStore.channelCount }} 通道 × {{ generatorStore.sampleCount.toLocaleString() }} 点
+          {{ t('generator.preview', { channels: generatorStore.channelCount, samples: generatorStore.sampleCount.toLocaleString() }) }}
           <span v-if="generatorStore.needsFrequency">
-            · 奈奎斯特 {{ formatNumber(generatorStore.sampleRate / 2, 3) }} Hz
+            · {{ t('generator.nyquist', { value: formatNumber(generatorStore.sampleRate / 2, 3) }) }}
           </span>
         </p>
         <div class="row">
           <button class="btn btn-primary" type="submit" :disabled="generatorStore.busy">
             <AppIcon name="zap" />
-            {{ generatorStore.busy ? '生成中…' : '生成并加入工程' }}
+            {{ generatorStore.busy ? t('generator.busy') : t('generator.run') }}
           </button>
           <button class="btn" type="button" @click="router.push('/data')">
             <AppIcon name="database" />
-            查看数据浏览
+            {{ t('generator.viewData') }}
           </button>
         </div>
       </aside>
 
       <article class="panel help">
-        <h2>说明</h2>
+        <h2>{{ t('common.help') }}</h2>
         <ul>
-          <li>各通道使用相同波形，相位按通道均匀错开，便于在波形页区分。</li>
-          <li>多频叠加为基频 + 2 倍频 + 3 倍频。</li>
-          <li>生成结果保存为 JSON，可重新打开工程后继续使用。</li>
-          <li>单通道最多 1,000,000 点，最多 32 通道。频率必须低于采样率的一半。</li>
-          <li>生成后可到波形、信号分析、频谱分析中验证。</li>
+          <li>{{ t('generator.help1') }}</li>
+          <li>{{ t('generator.help2') }}</li>
+          <li>{{ t('generator.help3') }}</li>
+          <li>{{ t('generator.help4') }}</li>
+          <li>{{ t('generator.help5') }}</li>
         </ul>
       </article>
     </form>

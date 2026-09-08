@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, watch } from 'vue'
 import AppIcon from '../components/common/AppIcon.vue'
+import { useI18n } from '../i18n'
 import { useLogStore } from '../stores/log'
 import { formatTimestamp } from '../utils/format'
 
 const logStore = useLogStore()
+const { t } = useI18n()
 
 onMounted(() => {
   void logStore.refresh()
@@ -18,32 +20,32 @@ watch([() => logStore.level, () => logStore.search], () => {
 <template>
   <section class="page">
     <header class="page-header">
-      <div class="kicker">Logs</div>
-      <h1>日志查看</h1>
-      <p>查看主进程与渲染进程记录的 DEBUG / INFO / WARNING / ERROR 日志。</p>
+      <div class="kicker">{{ t('log.kicker') }}</div>
+      <h1>{{ t('log.title') }}</h1>
+      <p>{{ t('log.desc') }}</p>
     </header>
     <div class="filters">
       <select v-model="logStore.level">
-        <option value="">全部级别</option>
+        <option value="">{{ t('log.allLevels') }}</option>
         <option value="DEBUG">DEBUG</option>
         <option value="INFO">INFO</option>
         <option value="WARNING">WARNING</option>
         <option value="ERROR">ERROR</option>
       </select>
-      <input v-model="logStore.search" placeholder="搜索日志" />
+      <input v-model="logStore.search" :placeholder="t('log.search')" />
       <button class="btn" type="button" @click="logStore.refresh()">
         <AppIcon name="refresh" />
-        刷新
+        {{ t('common.refresh') }}
       </button>
     </div>
     <div class="panel log-panel">
       <table class="table">
         <thead>
           <tr>
-            <th>时间</th>
-            <th>级别</th>
-            <th>来源</th>
-            <th>消息</th>
+            <th>{{ t('log.time') }}</th>
+            <th>{{ t('log.level') }}</th>
+            <th>{{ t('log.source') }}</th>
+            <th>{{ t('log.message') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -57,7 +59,7 @@ watch([() => logStore.level, () => logStore.search], () => {
           </tr>
         </tbody>
       </table>
-      <p v-if="logStore.entries.length === 0" class="muted">暂无日志。</p>
+      <p v-if="logStore.entries.length === 0" class="muted">{{ t('log.empty') }}</p>
     </div>
   </section>
 </template>

@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { DAQ_STATE_MESSAGE_KEYS } from '@shared/i18n'
+import { useI18n } from '../../i18n'
 import { useAppStore } from '../../stores/app'
 import { useProjectStore } from '../../stores/project'
 import { useDatasetStore } from '../../stores/dataset'
 import { useLiveStore } from '../../stores/live'
 import { useTaskStore } from '../../stores/task'
-import { DAQ_STATE_LABELS } from '@shared/types/live'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -14,42 +15,43 @@ const projectStore = useProjectStore()
 const datasetStore = useDatasetStore()
 const liveStore = useLiveStore()
 const taskStore = useTaskStore()
+const { t } = useI18n()
 
 const channelCount = computed(() => datasetStore.selected?.channelCount ?? 0)
 const sampleCount = computed(() => datasetStore.selected?.sampleCount ?? 0)
 
 const taskLabel = computed(() => {
   if (taskStore.runningCount > 0 && taskStore.pausedCount > 0) {
-    return `任务：${taskStore.runningCount} 运行 / ${taskStore.pausedCount} 暂停`
+    return t('status.taskMixed', { running: taskStore.runningCount, paused: taskStore.pausedCount })
   }
   if (taskStore.runningCount > 0) {
-    return `任务：${taskStore.runningCount} 运行中`
+    return t('status.taskRunning', { count: taskStore.runningCount })
   }
   if (taskStore.pausedCount > 0) {
-    return `任务：${taskStore.pausedCount} 已暂停`
+    return t('status.taskPaused', { count: taskStore.pausedCount })
   }
   if (taskStore.activeCount > 0) {
-    return `任务：${taskStore.activeCount} 进行中`
+    return t('status.taskActive', { count: taskStore.activeCount })
   }
-  return '任务：空闲'
+  return t('status.taskIdle')
 })
 </script>
 
 <template>
   <footer class="status">
-    <span>{{ projectStore.isDirty ? '未保存' : '就绪' }}</span>
+    <span>{{ projectStore.isDirty ? t('status.unsaved') : t('status.ready') }}</span>
     <span class="sep">|</span>
-    <span>工程：{{ projectStore.projectName }}</span>
+    <span>{{ t('status.project', { name: projectStore.projectName }) }}</span>
     <span class="sep">|</span>
     <span>{{ channelCount }} ch</span>
     <span class="sep">|</span>
     <span>{{ sampleCount.toLocaleString() }} samples</span>
     <span class="sep">|</span>
-    <span>DAQ：{{ DAQ_STATE_LABELS[liveStore.state] }}</span>
+    <span>{{ t('status.daq', { state: t(DAQ_STATE_MESSAGE_KEYS[liveStore.state]) }) }}</span>
     <span class="sep">|</span>
     <button class="task-link" type="button" @click="router.push('/tasks')">{{ taskLabel }}</button>
     <span class="grow"></span>
-    <span>{{ appStore.settings.theme === 'dark' ? 'Dark' : 'Light' }}</span>
+    <span>{{ appStore.settings.theme === 'dark' ? t('status.themeDark') : t('status.themeLight') }}</span>
     <span class="sep">|</span>
     <span>DataScope {{ appStore.info?.version ?? '1.0.0' }}</span>
   </footer>

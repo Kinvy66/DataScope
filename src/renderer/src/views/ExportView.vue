@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import AppIcon from '../components/common/AppIcon.vue'
 import { elapsedSeconds } from '@shared/markers/manage'
-import { EXPORT_FORMAT_LABELS } from '@shared/types/export'
+import { useI18n } from '../i18n'
 import { useDatasetStore } from '../stores/dataset'
 import { useExportStore } from '../stores/export'
 import { useProjectStore } from '../stores/project'
@@ -13,6 +13,7 @@ const router = useRouter()
 const projectStore = useProjectStore()
 const datasetStore = useDatasetStore()
 const exportStore = useExportStore()
+const { t } = useI18n()
 
 const dataset = computed(() => datasetStore.selected)
 
@@ -32,20 +33,20 @@ const windowLabel = computed(() => {
 <template>
   <section class="page">
     <header class="page-header">
-      <div class="kicker">Export</div>
-      <h1>数据导出</h1>
-      <p>将当前数据集导出为 CSV / TXT / JSON，写入工程的 exports 目录。导出走任务系统，可暂停或取消。</p>
+      <div class="kicker">{{ t('export.kicker') }}</div>
+      <h1>{{ t('export.title') }}</h1>
+      <p>{{ t('export.desc') }}</p>
     </header>
 
     <div v-if="!projectStore.hasProject" class="panel empty-state">
-      <p>请先新建或打开工程，并导入数据集后再导出。</p>
+      <p>{{ t('export.needProject') }}</p>
     </div>
 
     <div v-else-if="!dataset" class="panel empty-state">
-      <p>当前工程还没有可导出的数据集。</p>
+      <p>{{ t('export.noDataset') }}</p>
       <button class="btn btn-primary" type="button" @click="router.push('/data')">
         <AppIcon name="database" />
-        前往数据浏览
+        {{ t('common.goData') }}
       </button>
     </div>
 
@@ -58,21 +59,21 @@ const windowLabel = computed(() => {
         </p>
 
         <div class="field">
-          <label for="export-format">格式</label>
+          <label for="export-format">{{ t('common.format') }}</label>
           <select id="export-format" v-model="exportStore.format">
             <option v-for="item in exportStore.formats" :key="item" :value="item">
-              {{ EXPORT_FORMAT_LABELS[item] }}
+              {{ item.toUpperCase() }}
             </option>
           </select>
         </div>
 
         <div class="field">
-          <label for="export-name">文件名（不含扩展名）</label>
+          <label for="export-name">{{ t('export.fileName') }}</label>
           <input id="export-name" v-model="exportStore.fileName" />
         </div>
 
         <div class="field">
-          <label>导出通道</label>
+          <label>{{ t('export.channels') }}</label>
           <div class="channels">
             <label v-for="channel in dataset.channels" :key="channel.id" class="channel">
               <input
@@ -86,13 +87,13 @@ const windowLabel = computed(() => {
           </div>
           <button class="btn btn-ghost" type="button" @click="exportStore.selectAllChannels()">
             <AppIcon name="checkSquare" />
-            全选通道
+            {{ t('common.selectAllChannels') }}
           </button>
         </div>
 
         <div class="range">
           <div class="field">
-            <label for="export-start">起始采样点</label>
+            <label for="export-start">{{ t('common.startIndex') }}</label>
             <input
               id="export-start"
               v-model.number="exportStore.startIndex"
@@ -103,7 +104,7 @@ const windowLabel = computed(() => {
             />
           </div>
           <div class="field">
-            <label for="export-end">结束采样点</label>
+            <label for="export-end">{{ t('common.endIndex') }}</label>
             <input
               id="export-end"
               v-model.number="exportStore.endIndex"
@@ -115,31 +116,31 @@ const windowLabel = computed(() => {
           </div>
         </div>
         <p class="muted">{{ windowLabel }}</p>
-        <button class="btn btn-ghost" type="button" @click="exportStore.useFullRange()">全范围</button>
+        <button class="btn btn-ghost" type="button" @click="exportStore.useFullRange()">{{ t('common.fullRange') }}</button>
 
         <div class="row">
           <button class="btn btn-primary" type="submit" :disabled="!exportStore.canRun">
             <AppIcon name="upload" />
-            {{ exportStore.busy ? '导出中…' : '导出到 exports/' }}
+            {{ exportStore.busy ? t('export.busy') : t('export.run') }}
           </button>
           <button class="btn" type="button" @click="router.push('/tasks')">
             <AppIcon name="listTodo" />
-            任务管理
+            {{ t('nav.tasks') }}
           </button>
         </div>
       </aside>
 
       <article class="panel help">
-        <h2>说明</h2>
+        <h2>{{ t('common.help') }}</h2>
         <ul>
-          <li>CSV / TXT 表头为 <code>timestamp,通道名...</code>，可再导入。</li>
-          <li>TXT 使用制表符分隔；JSON 为行主序 <code>[timestamp, ch1, ...]</code>，避免与通道主序混淆。</li>
-          <li>文件写入当前工程 <code>exports/</code>，重名会自动加序号。</li>
-          <li>磁盘满、没有权限或路径无效会显示错误，不会假装成功。</li>
-          <li>私有二进制格式尚未支持。</li>
+          <li>{{ t('export.help1') }}</li>
+          <li>{{ t('export.help2') }}</li>
+          <li>{{ t('export.help3') }}</li>
+          <li>{{ t('export.help4') }}</li>
+          <li>{{ t('export.help5') }}</li>
         </ul>
         <div v-if="exportStore.result" class="result">
-          <h2>最近一次导出</h2>
+          <h2>{{ t('export.last') }}</h2>
           <p>{{ exportStore.result.relativePath }}</p>
           <p class="muted">
             {{ exportStore.result.channelCount }} ch ·

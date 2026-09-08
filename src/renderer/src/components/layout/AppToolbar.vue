@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppIcon from '../common/AppIcon.vue'
+import { useI18n } from '../../i18n'
 import { useAppStore } from '../../stores/app'
 import { useProjectStore } from '../../stores/project'
 import { useDatasetStore } from '../../stores/dataset'
@@ -7,6 +8,7 @@ import { useDatasetStore } from '../../stores/dataset'
 const appStore = useAppStore()
 const projectStore = useProjectStore()
 const datasetStore = useDatasetStore()
+const { t } = useI18n()
 const appIcon = `${import.meta.env.BASE_URL}icon.png`
 
 function toggleTheme(): void {
@@ -24,32 +26,32 @@ function toggleTheme(): void {
     <div class="actions">
       <button class="btn" type="button" @click="projectStore.openCreateDialog">
         <AppIcon name="folderPlus" />
-        新建工程
+        {{ t('toolbar.newProject') }}
       </button>
       <button class="btn" type="button" @click="projectStore.openProject()">
         <AppIcon name="folderOpen" />
-        打开
+        {{ t('toolbar.open') }}
       </button>
       <button class="btn" type="button" :disabled="!projectStore.hasProject" @click="projectStore.save()">
         <AppIcon name="save" />
-        保存
+        {{ t('toolbar.save') }}
       </button>
       <button class="btn" type="button" :disabled="!projectStore.hasProject" @click="projectStore.saveAs()">
         <AppIcon name="copy" />
-        另存为
+        {{ t('toolbar.saveAs') }}
       </button>
       <button class="btn" type="button" :disabled="!projectStore.hasProject" @click="projectStore.requestClose()">
         <AppIcon name="close" />
-        关闭工程
+        {{ t('toolbar.closeProject') }}
       </button>
       <button class="btn btn-primary" type="button" :disabled="!projectStore.hasProject" @click="datasetStore.importData()">
         <AppIcon name="download" />
-        导入数据
+        {{ t('toolbar.import') }}
       </button>
     </div>
     <button class="btn theme" type="button" @click="toggleTheme">
       <AppIcon :name="appStore.settings.theme === 'dark' ? 'sun' : 'moon'" />
-      {{ appStore.settings.theme === 'dark' ? '浅色主题' : '深色主题' }}
+      {{ appStore.settings.theme === 'dark' ? t('toolbar.lightTheme') : t('toolbar.darkTheme') }}
     </button>
   </header>
 </template>

@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { filterDatasets } from '@shared/datasets/query'
 import { nextMarkerName } from '@shared/markers/manage'
 import type { ChannelStatistics, DatasetInfo, MarkerDraft, SourceFormat } from '@shared/types/dataset'
+import { tt } from '../i18n'
 import { getErrorMessage } from '../utils/format'
 import { useAppStore } from './app'
 import { useProjectStore } from './project'
@@ -43,18 +44,18 @@ export const useDatasetStore = defineStore('dataset', () => {
   async function importData(): Promise<void> {
     const projectStore = useProjectStore()
     if (!projectStore.hasProject) {
-      useAppStore().setGlobalError('请先新建或打开工程，再导入数据')
+      useAppStore().setGlobalError(tt('error.needProjectImport'))
       return
     }
 
     const filePath = await window.datascope.dialog.openFile(
       [
-        { name: 'Data files', extensions: ['csv', 'txt', 'json'] },
+        { name: tt('dialog.filterData'), extensions: ['csv', 'txt', 'json'] },
         { name: 'CSV', extensions: ['csv'] },
         { name: 'TXT', extensions: ['txt'] },
         { name: 'JSON', extensions: ['json'] }
       ],
-      '导入数据'
+      tt('dialog.importTitle')
     )
     if (!filePath) return
 
@@ -112,7 +113,7 @@ export const useDatasetStore = defineStore('dataset', () => {
   async function addMarker(draft: MarkerDraft): Promise<void> {
     const datasetId = selectedId.value
     if (!datasetId) {
-      useAppStore().setGlobalError('请先选择一个数据集')
+      useAppStore().setGlobalError(tt('error.needSelectedDataset'))
       return
     }
     await runMarkerMutation(() => window.datascope.dataset.addMarker(datasetId, draft))
@@ -121,7 +122,7 @@ export const useDatasetStore = defineStore('dataset', () => {
   async function addMarkerAt(sampleIndex: number): Promise<void> {
     const current = selected.value
     if (!current) {
-      useAppStore().setGlobalError('请先选择一个数据集')
+      useAppStore().setGlobalError(tt('error.needSelectedDataset'))
       return
     }
     await addMarker({
@@ -135,7 +136,7 @@ export const useDatasetStore = defineStore('dataset', () => {
   async function updateMarker(markerId: string, draft: MarkerDraft): Promise<void> {
     const datasetId = selectedId.value
     if (!datasetId) {
-      useAppStore().setGlobalError('请先选择一个数据集')
+      useAppStore().setGlobalError(tt('error.needSelectedDataset'))
       return
     }
     await runMarkerMutation(() => window.datascope.dataset.updateMarker(datasetId, markerId, draft))
@@ -144,7 +145,7 @@ export const useDatasetStore = defineStore('dataset', () => {
   async function removeMarker(markerId: string): Promise<void> {
     const datasetId = selectedId.value
     if (!datasetId) {
-      useAppStore().setGlobalError('请先选择一个数据集')
+      useAppStore().setGlobalError(tt('error.needSelectedDataset'))
       return
     }
     await runMarkerMutation(() => window.datascope.dataset.removeMarker(datasetId, markerId))

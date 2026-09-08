@@ -4,6 +4,7 @@ import { CHANNEL_PRESETS } from '@shared/constants'
 import AppIcon from '../common/AppIcon.vue'
 import type { Channel, DatasetInfo, Marker, ViewportData } from '@shared/types/dataset'
 import { elapsedSeconds } from '@shared/markers/manage'
+import { useI18n } from '../../i18n'
 import { formatNumber } from '../../utils/format'
 
 const props = defineProps<{
@@ -15,6 +16,8 @@ const emit = defineEmits<{
   'add-at': [sampleIndex: number]
   focused: []
 }>()
+
+const { t } = useI18n()
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const hostRef = ref<HTMLElement | null>(null)
@@ -507,11 +510,11 @@ function addMarkerAtCursor(): void {
     <div class="wave-toolbar">
       <button class="btn" type="button" @click="zoom(0.8)">
         <AppIcon name="zoomIn" />
-        放大
+        {{ t('wave.zoomIn') }}
       </button>
       <button class="btn" type="button" @click="zoom(1.25)">
         <AppIcon name="zoomOut" />
-        缩小
+        {{ t('wave.zoomOut') }}
       </button>
       <button class="btn" type="button" @click="fitAll">
         <AppIcon name="maximize" />
@@ -522,7 +525,7 @@ function addMarkerAtCursor(): void {
         Auto Scale
       </button>
       <label class="lanes">
-        通道显示
+        {{ t('wave.lanes') }}
         <select v-model.number="maxLanes">
           <option v-for="preset in CHANNEL_PRESETS" :key="preset" :value="preset">{{ preset }}</option>
         </select>
@@ -537,11 +540,11 @@ function addMarkerAtCursor(): void {
       </button>
       <button class="btn btn-ghost" type="button" @click="clearCursors">
         <AppIcon name="x" />
-        清除 Cursor
+        {{ t('wave.clearCursors') }}
       </button>
       <button class="btn btn-primary" type="button" @click="addMarkerAtCursor">
         <AppIcon name="plus" />
-        从 Cursor A 添加 Marker
+        {{ t('wave.addMarker') }}
       </button>
     </div>
     <div class="wave-body">
@@ -554,10 +557,10 @@ function addMarkerAtCursor(): void {
         >
           <button class="swatch" type="button" :style="{ background: channel.color }" @click="toggleChannel(channel.id)" />
           <span>{{ channel.name }}</span>
-          <button class="tiny" type="button" title="上移" @click="moveChannel(channel.id, -1)">
+          <button class="tiny" type="button" :title="t('wave.moveUp')" @click="moveChannel(channel.id, -1)">
             <AppIcon name="arrowUp" :size="12" />
           </button>
-          <button class="tiny" type="button" title="下移" @click="moveChannel(channel.id, 1)">
+          <button class="tiny" type="button" :title="t('wave.moveDown')" @click="moveChannel(channel.id, 1)">
             <AppIcon name="arrowDown" :size="12" />
           </button>
         </div>
@@ -599,7 +602,7 @@ function addMarkerAtCursor(): void {
             </div>
           </div>
         </div>
-        <p class="hint">滚轮缩放，Shift+拖动平移，点击放置 Cursor。</p>
+        <p class="hint">{{ t('wave.hint') }}</p>
         <div class="kicker">Markers</div>
         <button
           v-for="marker in dataset.markers"
@@ -611,7 +614,7 @@ function addMarkerAtCursor(): void {
           <span class="dot" :style="{ background: marker.color }"></span>
           {{ marker.name }} · {{ marker.sampleIndex }}
         </button>
-        <p v-if="dataset.markers.length === 0" class="hint">还没有 Marker。</p>
+        <p v-if="dataset.markers.length === 0" class="hint">{{ t('wave.noMarkers') }}</p>
       </aside>
     </div>
   </section>

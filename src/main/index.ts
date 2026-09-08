@@ -5,6 +5,7 @@ import { createMainWindow } from './windows/mainWindow'
 import { attachCloseGuard, registerIpcHandlers } from './ipc'
 import { logger } from './services/logger'
 import { settingsService } from './services/settings'
+import { datasetRegistry } from './services/datasetRegistry'
 import { liveService } from './services/live'
 
 app.whenReady().then(async () => {
@@ -16,6 +17,7 @@ app.whenReady().then(async () => {
 
   const settings = await settingsService.get()
   logger.setMinLevel(settings.logLevel)
+  datasetRegistry.setCacheLimit(settings.viewportCacheLimit)
   await logger.write('INFO', `${APP_NAME} starting`, 'main', { version: app.getVersion() || '1.0.0' })
 
   registerIpcHandlers()

@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import AppIcon from '../common/AppIcon.vue'
+import { useI18n } from '../../i18n'
 import { useProjectStore } from '../../stores/project'
 
 const projectStore = useProjectStore()
+const { t } = useI18n()
 const name = ref('DemoProject')
 const location = ref('')
 const description = ref('')
 
 async function chooseLocation(): Promise<void> {
-  const selected = await window.datascope.dialog.openDirectory('选择工程位置')
+  const selected = await window.datascope.dialog.openDirectory(t('dialog.chooseProjectLocation'))
   if (selected) location.value = selected
 }
 
@@ -26,32 +28,32 @@ async function submit(): Promise<void> {
   <div class="overlay" @mousedown.self="projectStore.closeCreateDialog()">
     <section class="dialog">
       <header>
-        <div class="kicker">Project</div>
-        <h2>新建工程</h2>
+        <div class="kicker">{{ t('newProject.kicker') }}</div>
+        <h2>{{ t('newProject.title') }}</h2>
       </header>
       <div class="field">
-        <label for="project-name">名称</label>
+        <label for="project-name">{{ t('common.name') }}</label>
         <input id="project-name" v-model="name" maxlength="80" />
       </div>
       <div class="field">
-        <label for="project-location">位置</label>
+        <label for="project-location">{{ t('newProject.location') }}</label>
         <div class="row">
-          <input id="project-location" v-model="location" placeholder="选择保存目录" />
+          <input id="project-location" v-model="location" :placeholder="t('newProject.locationPlaceholder')" />
           <button class="btn" type="button" @click="chooseLocation">
             <AppIcon name="folderOpen" />
-            浏览
+            {{ t('common.browse') }}
           </button>
         </div>
       </div>
       <div class="field">
-        <label for="project-description">描述</label>
+        <label for="project-description">{{ t('common.description') }}</label>
         <textarea id="project-description" v-model="description" />
       </div>
       <p v-if="projectStore.errorMessage" class="muted">{{ projectStore.errorMessage }}</p>
       <footer>
         <button class="btn" type="button" @click="projectStore.closeCreateDialog()">
           <AppIcon name="x" />
-          取消
+          {{ t('common.cancel') }}
         </button>
         <button
           class="btn btn-primary"
@@ -60,7 +62,7 @@ async function submit(): Promise<void> {
           @click="submit"
         >
           <AppIcon name="plus" />
-          创建
+          {{ t('common.create') }}
         </button>
       </footer>
     </section>

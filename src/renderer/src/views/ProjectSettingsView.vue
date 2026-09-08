@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import AppIcon from '../components/common/AppIcon.vue'
+import { useI18n } from '../i18n'
 import { useProjectStore } from '../stores/project'
 
 const projectStore = useProjectStore()
+const { t } = useI18n()
 const name = ref('')
 const description = ref('')
 const sampleRate = ref(1000)
@@ -34,31 +36,31 @@ async function save(): Promise<void> {
 <template>
   <section class="page">
     <header class="page-header">
-      <div class="kicker">Project Settings</div>
-      <h1>工程设置</h1>
-      <p>编辑当前工程的名称、描述和默认采样率。修改后需要保存工程。</p>
+      <div class="kicker">{{ t('projectSettings.kicker') }}</div>
+      <h1>{{ t('projectSettings.title') }}</h1>
+      <p>{{ t('projectSettings.desc') }}</p>
     </header>
     <form v-if="projectStore.hasProject" class="panel form" @submit.prevent="save">
       <div class="field">
-        <label for="settings-name">名称</label>
+        <label for="settings-name">{{ t('common.name') }}</label>
         <input id="settings-name" v-model="name" />
       </div>
       <div class="field">
-        <label for="settings-rate">采样率 (Hz)</label>
+        <label for="settings-rate">{{ t('common.sampleRate') }}</label>
         <input id="settings-rate" v-model.number="sampleRate" type="number" min="0.0001" step="any" />
       </div>
       <div class="field">
-        <label for="settings-description">描述</label>
+        <label for="settings-description">{{ t('common.description') }}</label>
         <textarea id="settings-description" v-model="description" />
       </div>
-      <p class="muted">路径：{{ projectStore.current?.rootPath }}</p>
+      <p class="muted">{{ t('projectSettings.path', { path: projectStore.current?.rootPath ?? '' }) }}</p>
       <button class="btn btn-primary" type="submit" :disabled="!canSave || projectStore.busy">
         <AppIcon name="save" />
-        保存工程
+        {{ t('projectSettings.save') }}
       </button>
     </form>
     <div v-else class="panel empty-state">
-      <p>当前没有打开的工程。</p>
+      <p>{{ t('projectSettings.empty') }}</p>
     </div>
   </section>
 </template>

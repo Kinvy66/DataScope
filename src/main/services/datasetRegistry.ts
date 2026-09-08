@@ -1,5 +1,6 @@
 import { downsampleMinMax } from '@shared/algorithms/downsample'
 import { calculateChannelStatistics } from '@shared/algorithms/statistics'
+import { LruCache, viewportCacheKey } from '@shared/datasets/lruCache'
 import { DataScopeError } from '@shared/errors'
 import { toDatasetInfo } from '@shared/parsers/dataset'
 import type {
@@ -13,18 +14,26 @@ import type {
 
 class DatasetRegistry {
   private datasets = new Map<string, Dataset>()
+  private viewportCache = new LruCache<ViewportData>(0)
+
+  setCacheLimit(limit: number): void {
+    this.viewportCache.setLimit(limit)
+  }
 
   clear(): void {
     this.datasets.clear()
+    this.viewportCache.clear()
   }
 
   add(dataset: Dataset): DatasetInfo {
     this.datasets.set(dataset.id, dataset)
+    this.viewportCache.deleteByPrefix(`${dataset.id}|`)
     return toDatasetInfo(dataset)
   }
 
   remove(datasetId: string): void {
     this.datasets.delete(datasetId)
+    this.viewportCache.deleteByPrefix(`${datasetId}|`)
   }
 
   rename(datasetId: string, name: string): DatasetInfo {
@@ -72,6 +81,11 @@ class DatasetRegistry {
     const pixelWidth = Math.max(1, Math.floor(request.pixelWidth))
     const startIndex = Math.max(0, Math.floor(request.startIndex))
     const endIndex = Math.min(dataset.sampleCount - 1, Math.ceil(request.endIndex))
+    const key = viewportCacheKey(dataset.id, startIndex, endIndex, pixelWidth, request.channelIds)
+    const cached = this.viewportCache.get(key)
+    if (cached) {
+      return structuredClone(cached)
+    }
 
     const traces = request.channelIds.map((channelId) => {
       const channel = dataset.channels.find((item) => item.id === channelId)
@@ -87,13 +101,15 @@ class DatasetRegistry {
       }
     })
 
-    return {
+    const result: ViewportData = {
       datasetId: dataset.id,
       startIndex,
       endIndex,
       pixelWidth,
       traces
     }
+    this.viewportCache.set(key, result)
+    return result
   }
 }
 

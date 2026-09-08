@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { describeFilter, nyquistHz } from '@shared/algorithms/filter'
 import { DEFAULT_FILTER_SPEC, type FilterKind } from '@shared/types/filter'
 import type { DatasetInfo } from '@shared/types/dataset'
+import { tt } from '../i18n'
 import { getErrorMessage } from '../utils/format'
 import { useAnalysisStore } from './analysis'
 import { useAppStore } from './app'
@@ -53,11 +54,11 @@ export const useFilterStore = defineStore('filter', () => {
   async function apply(): Promise<void> {
     const dataset = datasetStore.selected
     if (!dataset) {
-      useAppStore().setGlobalError('请先导入并选择一个数据集')
+      useAppStore().setGlobalError(tt('error.needDataset'))
       return
     }
     if (analysisStore.selectedChannelIds.length === 0) {
-      useAppStore().setGlobalError('请至少选择一个通道')
+      useAppStore().setGlobalError(tt('error.needChannels'))
       return
     }
 

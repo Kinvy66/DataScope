@@ -2,15 +2,10 @@ import { dialog } from 'electron'
 import { copyFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import {
-  DEFAULT_PROJECT_SETTINGS,
-  type CreateProjectInput,
-  type ProjectFile,
-  type ProjectState,
-  type UpdateProjectInput
-} from '@shared/types/project'
+import { DEFAULT_PROJECT_SETTINGS, type CreateProjectInput, type ProjectFile, type ProjectState, type UpdateProjectInput } from '@shared/types/project'
 import { PROJECT_FILE_NAME, PROJECT_SCHEMA_VERSION } from '@shared/constants'
 import { DataScopeError } from '@shared/errors'
+import { translate } from '@shared/i18n'
 import { normalizeProjectMarkerRef } from '@shared/markers/manage'
 import { logger } from './logger'
 import { settingsService } from './settings'
@@ -47,13 +42,14 @@ class ProjectService {
     await mkdir(join(rootPath, 'logs'), { recursive: true })
 
     const now = Date.now()
+    const appSettings = await settingsService.get()
     const file: ProjectFile = {
       version: PROJECT_SCHEMA_VERSION,
       name,
       description: input.description.trim(),
       createdAt: now,
       modifiedAt: now,
-      sampleRate: 1000,
+      sampleRate: appSettings.defaultSampleRate,
       channelCount: 0,
       dataFiles: [],
       markers: [],
@@ -116,7 +112,7 @@ class ProjectService {
     let destination = targetRoot
     if (!destination) {
       const result = await dialog.showOpenDialog({
-        title: '选择另存为目录',
+        title: translate(settingsService.current().language, 'dialog.saveAsDirectory'),
         properties: ['openDirectory', 'createDirectory']
       })
       if (result.canceled || result.filePaths.length === 0) {

@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { GeneratorRequest, WaveformKind } from '@shared/types/generator'
+import type { AppSettings } from '@shared/types/settings'
+import { tt } from '../i18n'
 import { getErrorMessage } from '../utils/format'
 import { useAppStore } from './app'
 import { useDatasetStore } from './dataset'
@@ -39,7 +41,7 @@ export const useGeneratorStore = defineStore('generator', () => {
   async function generate(): Promise<void> {
     const projectStore = useProjectStore()
     if (!projectStore.hasProject) {
-      useAppStore().setGlobalError('请先新建或打开工程，再生成数据')
+      useAppStore().setGlobalError(tt('error.needProjectGenerate'))
       return
     }
 
@@ -60,6 +62,11 @@ export const useGeneratorStore = defineStore('generator', () => {
     }
   }
 
+  function applyDefaults(settings: AppSettings): void {
+    sampleRate.value = settings.defaultSampleRate
+    channelCount.value = settings.defaultChannelCount
+  }
+
   return {
     name,
     kind,
@@ -73,6 +80,7 @@ export const useGeneratorStore = defineStore('generator', () => {
     busy,
     sampleCount,
     needsFrequency,
-    generate
+    generate,
+    applyDefaults
   }
 })

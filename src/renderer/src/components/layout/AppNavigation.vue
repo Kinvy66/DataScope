@@ -1,30 +1,33 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../common/AppIcon.vue'
 import type { IconName } from '../common/icons'
+import { useI18n } from '../../i18n'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
-const items: { path: string; label: string; hint: string; icon: IconName }[] = [
-  { path: '/', label: '工作台', hint: 'Dashboard', icon: 'home' },
-  { path: '/data', label: '数据浏览', hint: 'Data Browser', icon: 'database' },
-  { path: '/live', label: '实时监视', hint: 'Live Monitor', icon: 'activity' },
-  { path: '/signal', label: '信号分析', hint: 'Signal Analysis', icon: 'chartLine' },
-  { path: '/spectrum', label: '频谱分析', hint: 'Spectrum', icon: 'chartBar' },
-  { path: '/markers', label: 'Marker 管理', hint: 'Markers', icon: 'pin' },
-  { path: '/generator', label: '数据发生器', hint: 'Generator', icon: 'zap' },
-  { path: '/export', label: '数据导出', hint: 'Export', icon: 'upload' },
-  { path: '/tasks', label: '任务管理', hint: 'Tasks', icon: 'listTodo' },
-  { path: '/logs', label: '日志查看', hint: 'Logs', icon: 'fileText' },
-  { path: '/project-settings', label: '工程设置', hint: 'Project', icon: 'folder' },
-  { path: '/app-settings', label: '应用设置', hint: 'Application', icon: 'settings' }
-]
+const items = computed((): { path: string; label: string; hint: string; icon: IconName }[] => [
+  { path: '/', label: t('nav.dashboard'), hint: t('nav.hint.dashboard'), icon: 'home' },
+  { path: '/data', label: t('nav.data'), hint: t('nav.hint.data'), icon: 'database' },
+  { path: '/live', label: t('nav.live'), hint: t('nav.hint.live'), icon: 'activity' },
+  { path: '/signal', label: t('nav.signal'), hint: t('nav.hint.signal'), icon: 'chartLine' },
+  { path: '/spectrum', label: t('nav.spectrum'), hint: t('nav.hint.spectrum'), icon: 'chartBar' },
+  { path: '/markers', label: t('nav.markers'), hint: t('nav.hint.markers'), icon: 'pin' },
+  { path: '/generator', label: t('nav.generator'), hint: t('nav.hint.generator'), icon: 'zap' },
+  { path: '/export', label: t('nav.export'), hint: t('nav.hint.export'), icon: 'upload' },
+  { path: '/tasks', label: t('nav.tasks'), hint: t('nav.hint.tasks'), icon: 'listTodo' },
+  { path: '/logs', label: t('nav.logs'), hint: t('nav.hint.logs'), icon: 'fileText' },
+  { path: '/project-settings', label: t('nav.projectSettings'), hint: t('nav.hint.project'), icon: 'folder' },
+  { path: '/app-settings', label: t('nav.appSettings'), hint: t('nav.hint.app'), icon: 'settings' }
+])
 </script>
 
 <template>
   <nav class="nav">
-    <div class="nav-title">导航</div>
+    <div class="nav-title">{{ t('nav.title') }}</div>
     <button
       v-for="item in items"
       :key="item.path"

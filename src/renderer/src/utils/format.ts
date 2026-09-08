@@ -16,7 +16,8 @@ export function getErrorMessage(error: unknown): string {
     }
     return message
   }
-  return '未知错误'
+  const lang = typeof document !== 'undefined' ? document.documentElement.lang : 'zh-CN'
+  return lang === 'en-US' ? 'Unknown error' : '未知错误'
 }
 
 export function formatNumber(value: number, digits = 4): string {
@@ -44,7 +45,8 @@ export function formatElapsedMs(ms: number): string {
 }
 
 export function formatTimestamp(value: number): string {
-  return new Date(value).toLocaleString()
+  const lang = typeof document !== 'undefined' ? document.documentElement.lang : 'zh-CN'
+  return new Date(value).toLocaleString(lang || 'zh-CN')
 }
 
 export function formatPath(path: string): string {

@@ -4,8 +4,10 @@ import { useRouter } from 'vue-router'
 import AppIcon from '../components/common/AppIcon.vue'
 import LivePlot from '../components/live/LivePlot.vue'
 import type { IconName } from '../components/common/icons'
-import { DAQ_COMMAND_LABELS, DAQ_STATE_LABELS, type DaqCommand } from '@shared/types/live'
+import { DAQ_COMMAND_MESSAGE_KEYS, DAQ_STATE_MESSAGE_KEYS, WAVEFORM_MESSAGE_KEYS } from '@shared/i18n'
 import { WAVEFORM_KINDS } from '@shared/types/generator'
+import type { DaqCommand } from '@shared/types/live'
+import { useI18n } from '../i18n'
 import { useLiveStore } from '../stores/live'
 import { useProjectStore } from '../stores/project'
 import { formatDuration, formatNumber } from '../utils/format'
@@ -13,6 +15,7 @@ import { formatDuration, formatNumber } from '../utils/format'
 const router = useRouter()
 const liveStore = useLiveStore()
 const projectStore = useProjectStore()
+const { t } = useI18n()
 
 const commandIcons: Record<DaqCommand, IconName> = {
   connect: 'plug',
@@ -23,15 +26,6 @@ const commandIcons: Record<DaqCommand, IconName> = {
   stop: 'square',
   disconnect: 'power',
   reset: 'rotateCcw'
-}
-
-const waveformLabels: Record<(typeof WAVEFORM_KINDS)[number], string> = {
-  sine: '正弦波',
-  square: '方波',
-  triangle: '三角波',
-  dc: '直流',
-  noise: '随机噪声',
-  'multi-frequency': '多频叠加'
 }
 
 const controls: DaqCommand[] = ['connect', 'arm', 'start', 'pause', 'resume', 'stop', 'disconnect', 'reset']
@@ -48,28 +42,28 @@ onMounted(() => {
 <template>
   <section class="page">
     <header class="page-header">
-      <div class="kicker">Live Monitor</div>
-      <h1>实时监视</h1>
-      <p>Virtual DAQ 在进程内组包、校验并写入环形缓冲，不依赖真实采集卡。传输方式为回环，不是 TCP/UDP 网口。</p>
+      <div class="kicker">{{ t('live.kicker') }}</div>
+      <h1>{{ t('live.title') }}</h1>
+      <p>{{ t('live.desc') }}</p>
     </header>
 
     <div class="layout">
       <aside class="panel controls">
         <h2>{{ liveStore.status?.deviceName ?? 'Virtual DAQ' }}</h2>
-        <p class="state">状态：{{ DAQ_STATE_LABELS[liveStore.state] }}</p>
+        <p class="state">{{ t('live.state', { state: t(DAQ_STATE_MESSAGE_KEYS[liveStore.state]) }) }}</p>
         <p class="muted">
           {{ liveStore.status?.channelCount ?? 0 }} ch ·
           {{ formatNumber(liveStore.status?.sampleRate ?? 0, 3) }} Hz ·
-          回环
+          {{ t('live.loopback') }}
         </p>
 
         <div class="field">
-          <label for="live-name">设备名称</label>
+          <label for="live-name">{{ t('live.deviceName') }}</label>
           <input id="live-name" v-model="liveStore.deviceName" :disabled="!liveStore.status?.canConfigure" />
         </div>
         <div class="grid">
           <div class="field">
-            <label for="live-ch">通道数</label>
+            <label for="live-ch">{{ t('common.channelCount') }}</label>
             <input
               id="live-ch"
               v-model.number="liveStore.channelCount"
@@ -80,7 +74,7 @@ onMounted(() => {
             />
           </div>
           <div class="field">
-            <label for="live-rate">采样率 (Hz)</label>
+            <label for="live-rate">{{ t('common.sampleRate') }}</label>
             <input
               id="live-rate"
               v-model.number="liveStore.sampleRate"
@@ -90,7 +84,7 @@ onMounted(() => {
             />
           </div>
           <div class="field">
-            <label for="live-buf">缓冲点数</label>
+            <label for="live-buf">{{ t('live.buffer') }}</label>
             <input
               id="live-buf"
               v-model.number="liveStore.bufferCapacity"
@@ -100,7 +94,7 @@ onMounted(() => {
             />
           </div>
           <div class="field">
-            <label for="live-pkt">每包点数</label>
+            <label for="live-pkt">{{ t('live.packet') }}</label>
             <input
               id="live-pkt"
               v-model.number="liveStore.samplesPerPacket"
@@ -112,14 +106,14 @@ onMounted(() => {
           </div>
         </div>
         <div class="field">
-          <label for="live-kind">波形</label>
+          <label for="live-kind">{{ t('live.waveform') }}</label>
           <select id="live-kind" v-model="liveStore.kind" :disabled="!liveStore.status?.canConfigure">
-            <option v-for="item in WAVEFORM_KINDS" :key="item" :value="item">{{ waveformLabels[item] }}</option>
+            <option v-for="item in WAVEFORM_KINDS" :key="item" :value="item">{{ t(WAVEFORM_MESSAGE_KEYS[item]) }}</option>
           </select>
         </div>
         <div class="grid">
           <div class="field">
-            <label for="live-freq">频率 (Hz)</label>
+            <label for="live-freq">{{ t('common.frequency') }}</label>
             <input
               id="live-freq"
               v-model.number="liveStore.frequency"
@@ -130,7 +124,7 @@ onMounted(() => {
             />
           </div>
           <div class="field">
-            <label for="live-amp">幅度</label>
+            <label for="live-amp">{{ t('common.amplitude') }}</label>
             <input
               id="live-amp"
               v-model.number="liveStore.amplitude"
@@ -152,12 +146,12 @@ onMounted(() => {
             @click="liveStore.command(item)"
           >
             <AppIcon :name="commandIcons[item]" />
-            {{ DAQ_COMMAND_LABELS[item] }}
+            {{ t(DAQ_COMMAND_MESSAGE_KEYS[item]) }}
           </button>
         </div>
 
         <div class="field">
-          <label for="live-capture">写入工程名称</label>
+          <label for="live-capture">{{ t('live.captureName') }}</label>
           <input id="live-capture" v-model="liveStore.captureName" />
         </div>
         <button
@@ -167,12 +161,12 @@ onMounted(() => {
           @click="liveStore.capture()"
         >
           <AppIcon name="hardDrive" />
-          将缓冲写入工程
+          {{ t('live.capture') }}
         </button>
-        <p v-if="!projectStore.hasProject" class="muted">写入工程需要先打开工程。</p>
+        <p v-if="!projectStore.hasProject" class="muted">{{ t('live.needProject') }}</p>
         <button class="btn btn-ghost" type="button" :disabled="!projectStore.hasProject" @click="router.push('/data')">
           <AppIcon name="database" />
-          打开数据浏览
+          {{ t('live.openData') }}
         </button>
       </aside>
 
@@ -180,19 +174,19 @@ onMounted(() => {
         <LivePlot :channels="liveStore.status?.channels ?? []" :running="running" />
         <article class="panel stats">
           <div>
-            <dt>运行时间</dt>
+            <dt>{{ t('live.elapsed') }}</dt>
             <dd>{{ elapsed }}</dd>
           </div>
           <div>
-            <dt>数据包</dt>
+            <dt>{{ t('live.packets') }}</dt>
             <dd>{{ (liveStore.status?.packetCount ?? 0).toLocaleString() }}</dd>
           </div>
           <div>
-            <dt>丢包（序号缺口）</dt>
+            <dt>{{ t('live.dropped') }}</dt>
             <dd>{{ liveStore.status?.droppedPacketCount ?? 0 }}</dd>
           </div>
           <div>
-            <dt>无效包</dt>
+            <dt>{{ t('live.invalid') }}</dt>
             <dd>{{ liveStore.status?.invalidPacketCount ?? 0 }}</dd>
           </div>
           <div>
@@ -204,7 +198,7 @@ onMounted(() => {
             </dd>
           </div>
           <div>
-            <dt>覆盖旧点</dt>
+            <dt>{{ t('live.overflow') }}</dt>
             <dd>{{ (liveStore.status?.overflowSamples ?? 0).toLocaleString() }}</dd>
           </div>
         </article>

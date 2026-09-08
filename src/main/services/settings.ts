@@ -2,6 +2,7 @@ import { app } from 'electron'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { existsSync } from 'node:fs'
+import { mergeAppSettings, validateSettingsPatch } from '@shared/settings/validate'
 import { DEFAULT_SETTINGS, type AppSettings } from '@shared/types/settings'
 import { logger } from './logger'
 
@@ -14,16 +15,19 @@ class SettingsService {
     return structuredClone(this.settings)
   }
 
+  current(): AppSettings {
+    return structuredClone(this.settings)
+  }
+
   async set(partial: Partial<AppSettings>): Promise<AppSettings> {
     await this.ensureLoaded()
-    this.settings = {
+    validateSettingsPatch(partial)
+    this.settings = mergeAppSettings({
       ...this.settings,
       ...partial,
       recentProjects: partial.recentProjects ?? this.settings.recentProjects
-    }
-    if (partial.logLevel) {
-      logger.setMinLevel(partial.logLevel)
-    }
+    })
+    logger.setMinLevel(this.settings.logLevel)
     await this.persist()
     await logger.write('INFO', 'Settings updated', 'main', {
       fields: Object.keys(partial).join(',')
@@ -56,12 +60,8 @@ class SettingsService {
 
     try {
       const raw = await readFile(filePath, 'utf8')
-      const parsed = JSON.parse(raw) as Partial<AppSettings>
-      this.settings = {
-        ...DEFAULT_SETTINGS,
-        ...parsed,
-        recentProjects: Array.isArray(parsed.recentProjects) ? parsed.recentProjects : []
-      }
+      const parsed: unknown = JSON.parse(raw)
+      this.settings = mergeAppSettings(parsed)
       logger.setMinLevel(this.settings.logLevel)
     } catch (error) {
       await logger.write('WARNING', 'Failed to read settings, using defaults', 'main', {

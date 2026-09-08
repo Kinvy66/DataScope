@@ -3,13 +3,10 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import AppIcon from '../components/common/AppIcon.vue'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
-import {
-  MARKER_TYPE_COLORS,
-  MARKER_TYPE_LABELS,
-  elapsedSeconds,
-  nextMarkerName
-} from '@shared/markers/manage'
+import { MARKER_TYPE_COLORS, elapsedSeconds, nextMarkerName } from '@shared/markers/manage'
+import { MARKER_TYPE_MESSAGE_KEYS } from '@shared/i18n'
 import { MARKER_TYPES, type Marker, type MarkerDraft, type MarkerType } from '@shared/types/dataset'
+import { useI18n } from '../i18n'
 import { useDatasetStore } from '../stores/dataset'
 import { useProjectStore } from '../stores/project'
 import { formatNumber } from '../utils/format'
@@ -17,6 +14,7 @@ import { formatNumber } from '../utils/format'
 const router = useRouter()
 const datasetStore = useDatasetStore()
 const projectStore = useProjectStore()
+const { t } = useI18n()
 
 const form = reactive({
   name: '',
@@ -153,45 +151,45 @@ async function jumpToWaveform(): Promise<void> {
 <template>
   <section class="page">
     <header class="page-header">
-      <div class="kicker">Marker Manager</div>
-      <h1>Marker 管理</h1>
-      <p>为当前数据集添加、编辑、删除 Marker，并跳转到波形对应位置。保存工程后重新打开仍然保留。</p>
+      <div class="kicker">{{ t('marker.kicker') }}</div>
+      <h1>{{ t('marker.title') }}</h1>
+      <p>{{ t('marker.desc') }}</p>
     </header>
 
     <div v-if="!projectStore.hasProject" class="panel empty-state">
-      <p>请先新建或打开工程，并导入数据集后再管理 Marker。</p>
+      <p>{{ t('marker.needProject') }}</p>
     </div>
 
     <div v-else-if="!datasetStore.selected" class="panel empty-state">
-      <p>当前工程还没有数据集。</p>
+      <p>{{ t('marker.noDataset') }}</p>
       <button class="btn btn-primary" type="button" @click="router.push('/data')">
         <AppIcon name="database" />
-        前往数据浏览
+        {{ t('common.goData') }}
       </button>
     </div>
 
     <div v-else class="layout">
       <aside class="panel form">
-        <h2>{{ selectedMarker ? `编辑 ${selectedMarker.name}` : '添加 Marker' }}</h2>
+        <h2>{{ selectedMarker ? t('marker.edit', { name: selectedMarker.name }) : t('marker.addTitle') }}</h2>
         <p class="muted">
           {{ datasetStore.selected.name }} · {{ datasetStore.selected.sampleCount.toLocaleString() }}
           samples · {{ formatNumber(datasetStore.selected.sampleRate, 3) }} Hz
         </p>
         <div class="field">
-          <label for="mk-name">名称</label>
+          <label for="mk-name">{{ t('common.name') }}</label>
           <input id="mk-name" v-model="form.name" />
         </div>
         <div class="field">
-          <label for="mk-type">类型</label>
+          <label for="mk-type">{{ t('common.type') }}</label>
           <select id="mk-type" v-model="form.type">
             <option v-for="item in MARKER_TYPES" :key="item" :value="item">
-              {{ MARKER_TYPE_LABELS[item] }}
+              {{ t(MARKER_TYPE_MESSAGE_KEYS[item]) }}
             </option>
           </select>
         </div>
         <div class="grid">
           <div class="field">
-            <label for="mk-index">采样点</label>
+            <label for="mk-index">{{ t('common.sampleIndex') }}</label>
             <input
               id="mk-index"
               v-model.number="form.sampleIndex"
@@ -203,31 +201,31 @@ async function jumpToWaveform(): Promise<void> {
             />
           </div>
           <div class="field">
-            <label for="mk-time">相对时间 (s)</label>
+            <label for="mk-time">{{ t('marker.elapsed') }}</label>
             <input id="mk-time" v-model.number="form.elapsed" type="number" step="any" @input="onElapsedChange" />
           </div>
         </div>
         <div class="field">
-          <label for="mk-channel">关联通道（可选）</label>
+          <label for="mk-channel">{{ t('marker.channelOptional') }}</label>
           <select id="mk-channel" v-model="form.channelId">
-            <option value="">全部通道</option>
+            <option value="">{{ t('marker.allChannels') }}</option>
             <option v-for="channel in datasetStore.selected.channels" :key="channel.id" :value="channel.id">
               {{ channel.name }}
             </option>
           </select>
         </div>
         <div class="field">
-          <label for="mk-color">颜色</label>
+          <label for="mk-color">{{ t('common.color') }}</label>
           <input id="mk-color" v-model="form.color" type="color" />
         </div>
         <div class="field">
-          <label for="mk-note">描述</label>
+          <label for="mk-note">{{ t('common.description') }}</label>
           <textarea id="mk-note" v-model="form.note" />
         </div>
         <div class="row">
           <button class="btn btn-primary" type="button" :disabled="datasetStore.busy" @click="submitAdd">
             <AppIcon name="plus" />
-            添加
+            {{ t('marker.add') }}
           </button>
           <button
             class="btn"
@@ -236,7 +234,7 @@ async function jumpToWaveform(): Promise<void> {
             @click="submitUpdate"
           >
             <AppIcon name="save" />
-            保存修改
+            {{ t('marker.save') }}
           </button>
           <button
             class="btn btn-danger"
@@ -245,32 +243,32 @@ async function jumpToWaveform(): Promise<void> {
             @click="requestDelete"
           >
             <AppIcon name="trash" />
-            删除
+            {{ t('common.delete') }}
           </button>
         </div>
         <div class="row">
           <button class="btn" type="button" @click="jumpToWaveform">
             <AppIcon name="activity" />
-            跳转到波形
+            {{ t('marker.jump') }}
           </button>
           <button class="btn btn-ghost" type="button" @click="startCreate">
             <AppIcon name="eraser" />
-            清空表单
+            {{ t('marker.clearForm') }}
           </button>
         </div>
       </aside>
 
       <article class="panel list">
-        <h2>Marker 列表</h2>
+        <h2>{{ t('marker.list') }}</h2>
         <table v-if="datasetStore.selected.markers.length" class="table">
           <thead>
             <tr>
-              <th>名称</th>
-              <th>类型</th>
-              <th>采样点</th>
-              <th>相对时间</th>
-              <th>通道</th>
-              <th>描述</th>
+              <th>{{ t('common.name') }}</th>
+              <th>{{ t('common.type') }}</th>
+              <th>{{ t('common.sampleIndex') }}</th>
+              <th>{{ t('common.relativeTime') }}</th>
+              <th>{{ t('common.channel') }}</th>
+              <th>{{ t('common.description') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -284,27 +282,28 @@ async function jumpToWaveform(): Promise<void> {
                 <span class="dot" :style="{ background: marker.color }"></span>
                 {{ marker.name }}
               </td>
-              <td>{{ MARKER_TYPE_LABELS[marker.type] }}</td>
+              <td>{{ t(MARKER_TYPE_MESSAGE_KEYS[marker.type]) }}</td>
               <td>{{ marker.sampleIndex }}</td>
               <td>{{ formatNumber(elapsedSeconds(datasetStore.selected.sampleRate, marker.sampleIndex), 6) }} s</td>
               <td>
                 {{
-                  datasetStore.selected.channels.find((channel) => channel.id === marker.channelId)?.name || '全部'
+                  datasetStore.selected.channels.find((channel) => channel.id === marker.channelId)?.name ||
+                    t('marker.allChannels')
                 }}
               </td>
               <td>{{ marker.note || '—' }}</td>
             </tr>
           </tbody>
         </table>
-        <p v-else class="muted">还没有 Marker。填写左侧表单后点击「添加」，或在波形页用 Cursor A 一键添加。</p>
+        <p v-else class="muted">{{ t('marker.empty') }}</p>
       </article>
     </div>
 
     <ConfirmDialog
       v-if="pendingDelete"
-      title="删除 Marker"
-      :message="`确定删除 Marker「${pendingDelete.name}」？`"
-      confirm-label="删除"
+      :title="t('marker.deleteTitle')"
+      :message="t('marker.deleteMessage', { name: pendingDelete.name })"
+      :confirm-label="t('common.delete')"
       danger
       @confirm="confirmDelete"
       @cancel="pendingDeleteId = null"

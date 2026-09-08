@@ -6,11 +6,13 @@ import AppNavigation from './AppNavigation.vue'
 import AppStatusBar from './AppStatusBar.vue'
 import NewProjectDialog from '../project/NewProjectDialog.vue'
 import UnsavedDialog from '../project/UnsavedDialog.vue'
+import { useI18n } from '../../i18n'
 import { useAppStore } from '../../stores/app'
 import { useProjectStore } from '../../stores/project'
 
 const appStore = useAppStore()
 const projectStore = useProjectStore()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -23,7 +25,7 @@ const projectStore = useProjectStore()
           <span>{{ appStore.globalError }}</span>
           <button class="btn btn-ghost" type="button" @click="appStore.setGlobalError(null)">
             <AppIcon name="x" />
-            关闭
+            {{ t('common.close') }}
           </button>
         </div>
         <RouterView />
@@ -33,14 +35,14 @@ const projectStore = useProjectStore()
     <NewProjectDialog v-if="projectStore.createDialogOpen" />
     <UnsavedDialog
       v-if="projectStore.closeDialogOpen"
-      title="工程有未保存的修改"
+      :title="t('unsaved.projectTitle')"
       @save="projectStore.confirmUnsaved('save')"
       @discard="projectStore.confirmUnsaved('discard')"
       @cancel="projectStore.confirmUnsaved('cancel')"
     />
     <UnsavedDialog
       v-if="appStore.closeDialogOpen"
-      title="关闭窗口前保存工程？"
+      :title="t('unsaved.windowTitle')"
       @save="appStore.confirmClose('save')"
       @discard="appStore.confirmClose('discard')"
       @cancel="appStore.confirmClose('cancel')"
