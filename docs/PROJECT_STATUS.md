@@ -41,7 +41,7 @@
 
 - 主进程窗口、`contextIsolation`、preload `window.datascope`
 - 导航、工具栏、状态栏、深色/浅色 token
-- 导航、工具栏与主要操作按钮使用内置 SVG 线框图标
+- 导航、工具栏与主要操作按钮使用内置 SVG 线框图标；顶栏不重复侧栏页面入口，保持单行
 - 应用图标：`resources/icon.png`（窗口 / 顶栏 / favicon）
 - 应用日志读写与日志查看页
 - 全局错误提示、关闭时未保存确认

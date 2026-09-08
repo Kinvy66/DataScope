@@ -52,7 +52,7 @@ const projectStore = useProjectStore()
 .shell {
   height: 100%;
   display: grid;
-  grid-template-rows: auto 1fr var(--statusbar-height);
+  grid-template-rows: var(--toolbar-height) 1fr var(--statusbar-height);
   background: var(--bg-app);
 }
 
